@@ -32,7 +32,8 @@ export function VideoCall() {
                         DISABLE_JOIN_LEAVE_NOTIFICATIONS: true
                     }}
                     userInfo={{
-                        displayName: 'Usuário Rede Social'
+                        displayName: 'Usuário Rede Social',
+                        email: 'usuario@isaude.app'
                     }}
                     getIFrameRef={(iframeRef) => {
                         iframeRef.style.height = '100%';

@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Pencil, ImageIcon, RefreshCcw } from 'lucide-react';
+import { Settings, Pencil, RefreshCcw } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Avatar } from '../../components/ui/Avatar';
