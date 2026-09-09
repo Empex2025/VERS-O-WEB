@@ -22,6 +22,9 @@ import { PoliticaPrivacidade, TermosUso } from './pages/meu-perfil/LegalPages';
 import { CentralAjuda } from './pages/meu-perfil/CentralAjuda';
 import { HistoricoConta } from './pages/meu-perfil/HistoricoConta';
 import { PerfilProfissional } from './pages/perfil/PerfilProfissional';
+import { PainelRecursos } from './pages/area-profissional/PainelRecursos';
+import { AgendaAtendimentos } from './pages/area-profissional/AgendaAtendimentos';
+import { HorariosAtendimento } from './pages/area-profissional/HorariosAtendimento';
 import { Pagamento } from './pages/minha-saude/Pagamento';
 import { InformacoesProfissionais } from './pages/verificacao-profissional/InformacoesProfissionais';
 import { HorarioFuncionamento } from './pages/verificacao-profissional/HorarioFuncionamento';
@@ -68,6 +71,9 @@ function App() {
         <Route path="/perfil-privado" element={<PerfilPrivado />} />
         <Route path="/perfil-profissional" element={<PerfilProfissional />} />
         <Route path="/perfil-profissional/:id" element={<PerfilProfissional />} />
+        <Route path="/area-profissional" element={<PainelRecursos />} />
+        <Route path="/area-profissional/agenda" element={<AgendaAtendimentos />} />
+        <Route path="/area-profissional/horarios" element={<HorariosAtendimento />} />
         <Route path="/verificacao" element={<InformacoesProfissionais />} />
         <Route path="/verificacao/horario" element={<HorarioFuncionamento />} />
         <Route path="/verificacao/endereco" element={<EnderecoAtendimento />} />

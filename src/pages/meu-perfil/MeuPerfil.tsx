@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Settings, Pencil, RefreshCcw } from 'lucide-react';
+import { Settings, Pencil, RefreshCcw, LayoutGrid } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Avatar } from '../../components/ui/Avatar';
@@ -70,6 +70,14 @@ export function MeuPerfil() {
                             >
                                 <Pencil size={15} /> Editar Perfil
                             </button>
+                            {(user?.tipo_usuario === 'profissional' || user?.tipo_usuario === 'clinica') && (
+                                <button
+                                    onClick={() => navigate('/area-profissional')}
+                                    className="flex items-center gap-1.5 text-sm font-bold px-4 py-2 rounded-full border border-[#407BFF]/30 text-[#407BFF] hover:bg-[#407BFF]/5 transition-colors"
+                                >
+                                    <LayoutGrid size={15} /> Painel
+                                </button>
+                            )}
                             <button
                                 onClick={() => navigate('/meu-perfil/opcoes')}
                                 className="w-9 h-9 rounded-full border border-gray-200 flex items-center justify-center text-gray-600 hover:bg-gray-50"
