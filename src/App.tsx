@@ -32,6 +32,9 @@ import { Financeiro } from './pages/area-profissional/Financeiro';
 import { PropostaVinculo } from './pages/area-profissional/PropostaVinculo';
 import { ClinicaVinculada } from './pages/area-profissional/ClinicaVinculada';
 import { DiasHorariosAtendimento } from './pages/area-profissional/DiasHorariosAtendimento';
+import { AtendimentoConcluido } from './pages/area-profissional/AtendimentoConcluido';
+import { PosAtendimento } from './pages/area-profissional/PosAtendimento';
+import { ResumoAtendimento } from './pages/area-profissional/ResumoAtendimento';
 import { Pagamento } from './pages/minha-saude/Pagamento';
 import { InformacoesProfissionais } from './pages/verificacao-profissional/InformacoesProfissionais';
 import { HorarioFuncionamento } from './pages/verificacao-profissional/HorarioFuncionamento';
@@ -88,6 +91,9 @@ function App() {
         <Route path="/area-profissional/vinculos/proposta" element={<PropostaVinculo />} />
         <Route path="/area-profissional/vinculos/clinica" element={<ClinicaVinculada />} />
         <Route path="/area-profissional/dias-horarios" element={<DiasHorariosAtendimento />} />
+        <Route path="/area-profissional/atendimento/concluido" element={<AtendimentoConcluido />} />
+        <Route path="/area-profissional/atendimento/pos" element={<PosAtendimento />} />
+        <Route path="/area-profissional/atendimento/resumo" element={<ResumoAtendimento />} />
         <Route path="/verificacao" element={<InformacoesProfissionais />} />
         <Route path="/verificacao/horario" element={<HorarioFuncionamento />} />
         <Route path="/verificacao/endereco" element={<EnderecoAtendimento />} />
