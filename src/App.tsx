@@ -35,6 +35,10 @@ import { DiasHorariosAtendimento } from './pages/area-profissional/DiasHorariosA
 import { AtendimentoConcluido } from './pages/area-profissional/AtendimentoConcluido';
 import { PosAtendimento } from './pages/area-profissional/PosAtendimento';
 import { ResumoAtendimento } from './pages/area-profissional/ResumoAtendimento';
+import { ComentarioPaciente } from './pages/area-profissional/ComentarioPaciente';
+import { GerarAtestado } from './pages/area-profissional/GerarAtestado';
+import { CriarPrescricao } from './pages/area-profissional/CriarPrescricao';
+import { SolicitarExames } from './pages/area-profissional/SolicitarExames';
 import { Pagamento } from './pages/minha-saude/Pagamento';
 import { InformacoesProfissionais } from './pages/verificacao-profissional/InformacoesProfissionais';
 import { HorarioFuncionamento } from './pages/verificacao-profissional/HorarioFuncionamento';
@@ -94,6 +98,10 @@ function App() {
         <Route path="/area-profissional/atendimento/concluido" element={<AtendimentoConcluido />} />
         <Route path="/area-profissional/atendimento/pos" element={<PosAtendimento />} />
         <Route path="/area-profissional/atendimento/resumo" element={<ResumoAtendimento />} />
+        <Route path="/area-profissional/atendimento/comentario" element={<ComentarioPaciente />} />
+        <Route path="/area-profissional/atendimento/atestado" element={<GerarAtestado />} />
+        <Route path="/area-profissional/atendimento/prescricao" element={<CriarPrescricao />} />
+        <Route path="/area-profissional/atendimento/exames" element={<SolicitarExames />} />
         <Route path="/verificacao" element={<InformacoesProfissionais />} />
         <Route path="/verificacao/horario" element={<HorarioFuncionamento />} />
         <Route path="/verificacao/endereco" element={<EnderecoAtendimento />} />
