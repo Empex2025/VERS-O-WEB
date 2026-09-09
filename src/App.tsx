@@ -29,6 +29,7 @@ import { PerguntasPreConsulta } from './pages/area-profissional/PerguntasPreCons
 import { NovaPergunta } from './pages/area-profissional/NovaPergunta';
 import { MeusVinculos } from './pages/area-profissional/MeusVinculos';
 import { Financeiro } from './pages/area-profissional/Financeiro';
+import { PropostaVinculo } from './pages/area-profissional/PropostaVinculo';
 import { Pagamento } from './pages/minha-saude/Pagamento';
 import { InformacoesProfissionais } from './pages/verificacao-profissional/InformacoesProfissionais';
 import { HorarioFuncionamento } from './pages/verificacao-profissional/HorarioFuncionamento';
@@ -82,6 +83,7 @@ function App() {
         <Route path="/area-profissional/pre-consulta/nova" element={<NovaPergunta />} />
         <Route path="/area-profissional/vinculos" element={<MeusVinculos />} />
         <Route path="/area-profissional/financeiro" element={<Financeiro />} />
+        <Route path="/area-profissional/vinculos/proposta" element={<PropostaVinculo />} />
         <Route path="/verificacao" element={<InformacoesProfissionais />} />
         <Route path="/verificacao/horario" element={<HorarioFuncionamento />} />
         <Route path="/verificacao/endereco" element={<EnderecoAtendimento />} />
