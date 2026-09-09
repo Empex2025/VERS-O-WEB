@@ -23,7 +23,7 @@ export function MeusVinculos() {
 
                 <div className="flex flex-col gap-6 pt-2">
                     <Secao titulo="Solicitações Recebidas" itens={SOLICITACOES} onClick={() => navigate('/area-profissional/vinculos/proposta')} />
-                    <Secao titulo="Vínculos" itens={VINCULOS} />
+                    <Secao titulo="Vínculos" itens={VINCULOS} onClick={() => navigate('/area-profissional/vinculos/clinica')} />
                 </div>
             </div>
         </AppShell>
