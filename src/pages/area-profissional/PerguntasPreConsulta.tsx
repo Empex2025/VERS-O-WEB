@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Trash2, Plus } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -6,6 +7,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 const PADRAO = ['Altura', 'Peso', 'Pressão Arterial', 'Doenças Crônicas', 'Alergias', 'Cirurgias'];
 
 export function PerguntasPreConsulta() {
+    const navigate = useNavigate();
     const [padrao, setPadrao] = useState<string[]>(PADRAO);
     const [minhas, setMinhas] = useState<string[]>(['Altura']);
 
@@ -40,7 +42,7 @@ export function PerguntasPreConsulta() {
                             ))}
                         </div>
                         <button
-                            onClick={() => setMinhas((p) => [...p, 'Nova Pergunta'])}
+                            onClick={() => navigate('/area-profissional/pre-consulta/nova')}
                             className="w-full mt-3 flex items-center justify-center gap-1.5 text-sm font-bold text-[#407BFF] bg-[#407BFF]/10 hover:bg-[#407BFF]/15 py-3 rounded-xl transition-colors"
                         >
                             Criar Pergunta <Plus size={16} />
