@@ -25,6 +25,7 @@ import { PerfilProfissional } from './pages/perfil/PerfilProfissional';
 import { PainelRecursos } from './pages/area-profissional/PainelRecursos';
 import { AgendaAtendimentos } from './pages/area-profissional/AgendaAtendimentos';
 import { HorariosAtendimento } from './pages/area-profissional/HorariosAtendimento';
+import { PerguntasPreConsulta } from './pages/area-profissional/PerguntasPreConsulta';
 import { Pagamento } from './pages/minha-saude/Pagamento';
 import { InformacoesProfissionais } from './pages/verificacao-profissional/InformacoesProfissionais';
 import { HorarioFuncionamento } from './pages/verificacao-profissional/HorarioFuncionamento';
@@ -74,6 +75,7 @@ function App() {
         <Route path="/area-profissional" element={<PainelRecursos />} />
         <Route path="/area-profissional/agenda" element={<AgendaAtendimentos />} />
         <Route path="/area-profissional/horarios" element={<HorariosAtendimento />} />
+        <Route path="/area-profissional/pre-consulta" element={<PerguntasPreConsulta />} />
         <Route path="/verificacao" element={<InformacoesProfissionais />} />
         <Route path="/verificacao/horario" element={<HorarioFuncionamento />} />
         <Route path="/verificacao/endereco" element={<EnderecoAtendimento />} />
