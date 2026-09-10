@@ -55,7 +55,7 @@ export function PropostaVinculo() {
                 {/* Rodapé */}
                 <div className="flex items-center justify-end gap-4 border-t border-gray-100 pt-4 mt-4">
                     <button onClick={() => navigate(-1)} className="text-sm font-semibold text-rose-500 px-4 py-2">Recusar Solicitação</button>
-                    <button onClick={() => navigate('/area-profissional/vinculos')} className="bg-[#407BFF] hover:bg-blue-600 text-white text-sm font-bold px-6 py-2.5 rounded-full transition-colors">
+                    <button onClick={() => navigate('/area-profissional/vinculos/confirmado')} className="bg-[#407BFF] hover:bg-blue-600 text-white text-sm font-bold px-6 py-2.5 rounded-full transition-colors">
                         Aceitar Solicitação
                     </button>
                 </div>

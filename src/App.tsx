@@ -39,6 +39,8 @@ import { ComentarioPaciente } from './pages/area-profissional/ComentarioPaciente
 import { GerarAtestado } from './pages/area-profissional/GerarAtestado';
 import { CriarPrescricao } from './pages/area-profissional/CriarPrescricao';
 import { SolicitarExames } from './pages/area-profissional/SolicitarExames';
+import { TermosVinculacao } from './pages/area-profissional/TermosVinculacao';
+import { VinculoConfirmado } from './pages/area-profissional/VinculoConfirmado';
 import { Pagamento } from './pages/minha-saude/Pagamento';
 import { InformacoesProfissionais } from './pages/verificacao-profissional/InformacoesProfissionais';
 import { HorarioFuncionamento } from './pages/verificacao-profissional/HorarioFuncionamento';
@@ -94,6 +96,8 @@ function App() {
         <Route path="/area-profissional/financeiro" element={<Financeiro />} />
         <Route path="/area-profissional/vinculos/proposta" element={<PropostaVinculo />} />
         <Route path="/area-profissional/vinculos/clinica" element={<ClinicaVinculada />} />
+        <Route path="/area-profissional/vinculos/termos" element={<TermosVinculacao />} />
+        <Route path="/area-profissional/vinculos/confirmado" element={<VinculoConfirmado />} />
         <Route path="/area-profissional/dias-horarios" element={<DiasHorariosAtendimento />} />
         <Route path="/area-profissional/atendimento/concluido" element={<AtendimentoConcluido />} />
         <Route path="/area-profissional/atendimento/pos" element={<PosAtendimento />} />

@@ -1,5 +1,6 @@
 import { useState } from 'react';
-import { MoreHorizontal, BadgeCheck, FlaskConical, Star, ChevronLeft, ChevronRight } from 'lucide-react';
+import { MoreHorizontal, BadgeCheck, FlaskConical, Star, ChevronLeft, ChevronRight, LifeBuoy, CalendarDays, X } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
@@ -15,7 +16,10 @@ const ATEND = [
 ];
 
 export function ClinicaVinculada() {
+    const navigate = useNavigate();
     const [sel, setSel] = useState(28);
+    const [menu, setMenu] = useState(false);
+    const [confirm, setConfirm] = useState(false);
 
     return (
         <AppShell rightRail={null}>
@@ -23,7 +27,7 @@ export function ClinicaVinculada() {
                 <PageHeader
                     title="Clínica Vinculada"
                     to="/area-profissional/vinculos"
-                    right={<button className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500"><MoreHorizontal size={16} /></button>}
+                    right={<button onClick={() => setMenu(true)} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><MoreHorizontal size={16} /></button>}
                 />
 
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 flex flex-col gap-6">
@@ -82,7 +86,65 @@ export function ClinicaVinculada() {
                     </div>
                 </div>
             </div>
+
+            {/* Modal Vínculos (menu ···) */}
+            {menu && (
+                <Overlay onClose={() => setMenu(false)}>
+                    <div className="bg-white rounded-2xl w-full max-w-md p-5 shadow-xl">
+                        <div className="flex items-start justify-between mb-4">
+                            <div>
+                                <p className="text-lg font-bold text-gray-900">Clínica Mais Saúde</p>
+                                <p className="text-xs text-gray-400">Instituição Vinculada</p>
+                            </div>
+                            <button onClick={() => setMenu(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                        </div>
+                        <div className="flex flex-col gap-2">
+                            <MenuRow icon={<LifeBuoy size={18} className="text-[#407BFF]" />} label="Ajuda e Suporte" onClick={() => setMenu(false)} />
+                            <MenuRow icon={<CalendarDays size={18} className="text-[#407BFF]" />} label="Termos de Vinculação" onClick={() => navigate('/area-profissional/vinculos/termos')} />
+                            <MenuRow icon={<X size={18} className="text-rose-500" />} label="Encerrar Vínculo" danger onClick={() => { setMenu(false); setConfirm(true); }} />
+                        </div>
+                    </div>
+                </Overlay>
+            )}
+
+            {/* Modal Encerrar Vínculo */}
+            {confirm && (
+                <Overlay onClose={() => setConfirm(false)}>
+                    <div className="bg-white rounded-2xl w-full max-w-md p-6 shadow-xl text-center">
+                        <div className="flex items-start justify-between">
+                            <span />
+                            <button onClick={() => setConfirm(false)} className="text-gray-400 hover:text-gray-600"><X size={20} /></button>
+                        </div>
+                        <p className="text-lg font-bold text-gray-900 px-4">Você tem certeza que deseja Encerrar o Vínculo com a Instituição?</p>
+                        <p className="text-sm text-gray-500 mt-3 leading-relaxed px-2">
+                            Não é possível desfazer essa ação. Após a confirmação, <span className="font-semibold text-gray-700">não serão feitos novos agendamentos</span> através da instituição. No entanto, <span className="font-semibold text-gray-700">o vínculo será encerrado apenas após o fechamento da agenda já confirmada.</span>
+                        </p>
+                        <div className="grid grid-cols-2 gap-3 mt-6">
+                            <button onClick={() => setConfirm(false)} className="bg-rose-50 text-rose-500 text-sm font-bold py-3 rounded-full hover:bg-rose-100 transition-colors">Voltar</button>
+                            <button onClick={() => navigate('/area-profissional/vinculos')} className="bg-rose-500 text-white text-sm font-bold py-3 rounded-full hover:bg-rose-600 transition-colors">Sim, Encerrar</button>
+                        </div>
+                    </div>
+                </Overlay>
+            )}
         </AppShell>
+    );
+}
+
+function Overlay({ children, onClose }: { children: React.ReactNode; onClose: () => void }) {
+    return (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4" onClick={onClose}>
+            <div onClick={(e) => e.stopPropagation()}>{children}</div>
+        </div>
+    );
+}
+
+function MenuRow({ icon, label, danger, onClick }: { icon: React.ReactNode; label: string; danger?: boolean; onClick?: () => void }) {
+    return (
+        <button onClick={onClick} className={`w-full flex items-center gap-3 rounded-xl px-4 py-3.5 text-left transition-colors ${danger ? 'bg-rose-50 hover:bg-rose-100' : 'bg-[#F3F4F6] hover:bg-gray-200/70'}`}>
+            {icon}
+            <span className={`flex-1 text-sm font-bold ${danger ? 'text-rose-500' : 'text-gray-800'}`}>{label}</span>
+            <ChevronRight size={16} className={danger ? 'text-rose-300' : 'text-gray-400'} />
+        </button>
     );
 }
 
