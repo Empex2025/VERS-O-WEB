@@ -16,6 +16,7 @@ import { Notificacoes } from './pages/notificacoes/Notificacoes';
 import { Perfil, PerfilPaciente, PerfilPrivado } from './pages/perfil/Perfil';
 import { MeuPerfil } from './pages/meu-perfil/MeuPerfil';
 import { EditarPerfil } from './pages/meu-perfil/EditarPerfil';
+import { TipoPerfil } from './pages/meu-perfil/TipoPerfil';
 import { OpcoesPerfil } from './pages/meu-perfil/OpcoesPerfil';
 import { Salvos } from './pages/meu-perfil/Salvos';
 import { PoliticaPrivacidade, TermosUso } from './pages/meu-perfil/LegalPages';
@@ -50,6 +51,7 @@ import { EnderecoAtendimento } from './pages/verificacao-profissional/EnderecoAt
 import { ModalidadeAtendimento } from './pages/verificacao-profissional/ModalidadeAtendimento';
 import { ChavePix } from './pages/verificacao-profissional/ChavePix';
 import { VerificacaoConcluida } from './pages/verificacao-profissional/VerificacaoConcluida';
+import { ProntoParaAtender } from './pages/verificacao-profissional/ProntoParaAtender';
 import { CriarPost } from './pages/criar-post/CriarPost';
 import { Conversas } from './pages/conversas/Conversas';
 import { Flashs } from './pages/placeholder/ComingSoon';
@@ -78,6 +80,7 @@ function App() {
         <Route path="/criar-post" element={<CriarPost />} />
         <Route path="/meu-perfil" element={<MeuPerfil />} />
         <Route path="/meu-perfil/editar" element={<EditarPerfil />} />
+        <Route path="/meu-perfil/tipo-perfil" element={<TipoPerfil />} />
         <Route path="/meu-perfil/opcoes" element={<OpcoesPerfil />} />
         <Route path="/meu-perfil/salvos" element={<Salvos />} />
         <Route path="/meu-perfil/politica" element={<PoliticaPrivacidade />} />
@@ -117,6 +120,7 @@ function App() {
         <Route path="/verificacao/pix" element={<ChavePix />} />
         <Route path="/verificacao/concluido" element={<VerificacaoConcluida />} />
         <Route path="/verificacao-documentos" element={<VerificacaoDocumentos />} />
+        <Route path="/verificacao/intro" element={<ProntoParaAtender />} />
         <Route path="/minha-saude" element={<MinhaSaude />} />
         <Route path="/minha-saude/exames" element={<ResultadosExames />} />
         <Route path="/minha-saude/documento" element={<DocumentoMedico />} />

@@ -97,7 +97,7 @@ export function EditarPerfil() {
                         </div>
                     )}
 
-                    <button onClick={() => setConfirmSwitch(true)} className="text-xs font-bold text-[#407BFF] underline self-start">
+                    <button onClick={() => navigate('/meu-perfil/tipo-perfil')} className="text-xs font-bold text-[#407BFF] underline self-start">
                         Alterar tipo de Perfil
                     </button>
 
