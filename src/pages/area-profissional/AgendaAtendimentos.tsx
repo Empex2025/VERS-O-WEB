@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react';
 import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
+import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 
@@ -23,6 +24,7 @@ function sampleAtendimentos(todayKey: string): Record<string, Atendimento[]> {
 }
 
 export function AgendaAtendimentos() {
+    const navigate = useNavigate();
     const now = new Date();
     const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() });
     const [selected, setSelected] = useState(isoKey(now.getFullYear(), now.getMonth(), now.getDate()));
@@ -107,13 +109,17 @@ export function AgendaAtendimentos() {
                         ) : (
                             <div className="flex flex-col gap-2">
                                 {doDia.map((a, i) => (
-                                    <div key={i} className="flex items-center justify-between border border-gray-100 rounded-xl px-4 py-3">
+                                    <button
+                                        key={i}
+                                        onClick={() => navigate('/area-profissional/atendimento/concluido')}
+                                        className="w-full flex items-center justify-between border border-gray-100 rounded-xl px-4 py-3 text-left hover:border-[#407BFF]/40 transition-colors"
+                                    >
                                         <div>
                                             <p className="text-sm font-bold text-gray-900">{a.nome}</p>
                                             <p className="text-xs text-gray-400">{a.tipo}</p>
                                         </div>
                                         <span className="text-xs font-semibold text-gray-600">{a.inicio} às {a.fim}</span>
-                                    </div>
+                                    </button>
                                 ))}
                             </div>
                         )}
