@@ -41,6 +41,7 @@ import { CriarPrescricao } from './pages/area-profissional/CriarPrescricao';
 import { SolicitarExames } from './pages/area-profissional/SolicitarExames';
 import { TermosVinculacao } from './pages/area-profissional/TermosVinculacao';
 import { VinculoConfirmado } from './pages/area-profissional/VinculoConfirmado';
+import { AssinarPrescricao, AssinarAtestado } from './pages/area-profissional/AssinarDocumento';
 import { Pagamento } from './pages/minha-saude/Pagamento';
 import { InformacoesProfissionais } from './pages/verificacao-profissional/InformacoesProfissionais';
 import { HorarioFuncionamento } from './pages/verificacao-profissional/HorarioFuncionamento';
@@ -106,6 +107,8 @@ function App() {
         <Route path="/area-profissional/atendimento/atestado" element={<GerarAtestado />} />
         <Route path="/area-profissional/atendimento/prescricao" element={<CriarPrescricao />} />
         <Route path="/area-profissional/atendimento/exames" element={<SolicitarExames />} />
+        <Route path="/area-profissional/atendimento/prescricao/assinar" element={<AssinarPrescricao />} />
+        <Route path="/area-profissional/atendimento/atestado/assinar" element={<AssinarAtestado />} />
         <Route path="/verificacao" element={<InformacoesProfissionais />} />
         <Route path="/verificacao/horario" element={<HorarioFuncionamento />} />
         <Route path="/verificacao/endereco" element={<EnderecoAtendimento />} />
