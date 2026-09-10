@@ -42,6 +42,7 @@ import { SolicitarExames } from './pages/area-profissional/SolicitarExames';
 import { TermosVinculacao } from './pages/area-profissional/TermosVinculacao';
 import { VinculoConfirmado } from './pages/area-profissional/VinculoConfirmado';
 import { AssinarPrescricao, AssinarAtestado } from './pages/area-profissional/AssinarDocumento';
+import { VerificacaoDocumentos } from './pages/verificacao-documentos/VerificacaoDocumentos';
 import { Pagamento } from './pages/minha-saude/Pagamento';
 import { InformacoesProfissionais } from './pages/verificacao-profissional/InformacoesProfissionais';
 import { HorarioFuncionamento } from './pages/verificacao-profissional/HorarioFuncionamento';
@@ -115,6 +116,7 @@ function App() {
         <Route path="/verificacao/modalidade" element={<ModalidadeAtendimento />} />
         <Route path="/verificacao/pix" element={<ChavePix />} />
         <Route path="/verificacao/concluido" element={<VerificacaoConcluida />} />
+        <Route path="/verificacao-documentos" element={<VerificacaoDocumentos />} />
         <Route path="/minha-saude" element={<MinhaSaude />} />
         <Route path="/minha-saude/exames" element={<ResultadosExames />} />
         <Route path="/minha-saude/documento" element={<DocumentoMedico />} />
