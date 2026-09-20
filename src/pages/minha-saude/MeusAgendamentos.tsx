@@ -1,4 +1,4 @@
-import { BadgeCheck, Video, MapPin, ChevronRight, Clock } from 'lucide-react';
+import { BadgeCheck, Video, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -58,39 +58,40 @@ export function MeusAgendamentos() {
                 <PageHeader title="Meus Agendamentos" to="/minha-saude" />
 
                 <div className="flex flex-col gap-3">
-                    {appointmentsData.map((a) => (
-                        <button
-                            key={a.id}
-                            onClick={() => navigate(`/minha-saude/agendamentos/${a.id}`)}
-                            className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 text-left hover:border-[#407BFF] transition-colors"
-                        >
-                            <div className="flex items-center gap-3">
-                                <Avatar name={a.professional} size={44} />
-                                <div className="flex-1 min-w-0">
-                                    <p className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                                        {a.professional} <BadgeCheck size={14} className="text-emerald-500" />
-                                    </p>
-                                    <p className="text-xs text-gray-400">{a.role}</p>
+                    {appointmentsData.map((a, i) => {
+                        const isExame = /exame|raio|hemograma/i.test(a.type);
+                        return (
+                            <button
+                                key={a.id}
+                                onClick={() => navigate(`/minha-saude/agendamentos/${a.id}`)}
+                                className="relative bg-white border border-gray-100 shadow-sm rounded-2xl p-4 text-left hover:border-[#407BFF] transition-colors"
+                            >
+                                {i === 0 && (
+                                    <span className="absolute -top-2 right-4 bg-emerald-500 text-white text-[10px] font-bold px-2.5 py-1 rounded-full">Inicia em 3 min</span>
+                                )}
+                                <div className="flex items-center justify-between gap-3">
+                                    <div className="flex items-center gap-3 min-w-0">
+                                        <Avatar name={a.professional} size={40} />
+                                        <p className="text-sm font-bold text-gray-900 flex items-center gap-1 truncate">
+                                            {a.professional} <BadgeCheck size={14} className="text-[#407BFF] shrink-0" />
+                                        </p>
+                                    </div>
+                                    <div className="text-right shrink-0">
+                                        <p className="text-[11px] text-gray-400 capitalize">{a.date}</p>
+                                        <p className="text-sm font-bold text-gray-900">{a.time}</p>
+                                    </div>
                                 </div>
-                                <span className={`text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                                    a.status === 'Confirmado' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
-                                }`}>
-                                    {a.status}
-                                </span>
-                            </div>
 
-                            <div className="flex items-center justify-between mt-3 pt-3 border-t border-gray-100">
-                                <span className="flex items-center gap-1.5 text-xs text-gray-500">
-                                    {a.channel === 'Teleconsulta' ? <Video size={14} /> : <MapPin size={14} />}
-                                    {a.channel} · {a.type}
-                                </span>
-                                <span className="flex items-center gap-1.5 text-xs font-semibold text-gray-700">
-                                    <Clock size={14} /> {a.time}
-                                    <ChevronRight size={16} className="text-gray-300" />
-                                </span>
-                            </div>
-                        </button>
-                    ))}
+                                <div className="mt-3 pt-3 border-t border-gray-100">
+                                    <p className="text-[11px] text-gray-400">{isExame ? 'Exames' : 'Tipo de Atendimento'}</p>
+                                    <p className="text-sm font-bold text-gray-900 mt-0.5 flex items-center gap-1.5">
+                                        {!isExame && (a.channel === 'Teleconsulta' ? <Video size={14} className="text-gray-400" /> : <MapPin size={14} className="text-gray-400" />)}
+                                        {isExame ? a.type : a.channel}
+                                    </p>
+                                </div>
+                            </button>
+                        );
+                    })}
                 </div>
             </div>
         </AppShell>
