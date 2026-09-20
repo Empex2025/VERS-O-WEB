@@ -68,6 +68,8 @@ import { PreConsulta } from './pages/minha-saude/PreConsulta';
 import { PosConsulta } from './pages/minha-saude/PosConsulta';
 import { PrescricoesAtestados } from './pages/minha-saude/PrescricoesAtestados';
 import { DocumentoView } from './pages/minha-saude/DocumentoView';
+import { HistoricoAtendimentos } from './pages/minha-saude/HistoricoAtendimentos';
+import { HistoricoDetalhe } from './pages/minha-saude/HistoricoDetalhe';
 
 function App() {
   return (
@@ -128,6 +130,8 @@ function App() {
         <Route path="/minha-saude/documento" element={<DocumentoMedico />} />
         <Route path="/minha-saude/documentos" element={<PrescricoesAtestados />} />
         <Route path="/minha-saude/documento/:tipo" element={<DocumentoView />} />
+        <Route path="/minha-saude/historico" element={<HistoricoAtendimentos />} />
+        <Route path="/minha-saude/historico/:id" element={<HistoricoDetalhe />} />
         <Route path="/minha-saude/informacoes" element={<InformacoesSaude />} />
         <Route path="/minha-saude/agendamentos" element={<MeusAgendamentos />} />
         <Route path="/minha-saude/agendamentos/:id" element={<AgendamentoDetalhe />} />
