@@ -66,6 +66,8 @@ import { Reagendar, AgendarRetorno } from './pages/minha-saude/ScheduleIntro';
 import { ConfirmacaoAgendamento } from './pages/minha-saude/ConfirmacaoAgendamento';
 import { PreConsulta } from './pages/minha-saude/PreConsulta';
 import { PosConsulta } from './pages/minha-saude/PosConsulta';
+import { PrescricoesAtestados } from './pages/minha-saude/PrescricoesAtestados';
+import { DocumentoView } from './pages/minha-saude/DocumentoView';
 
 function App() {
   return (
@@ -124,6 +126,8 @@ function App() {
         <Route path="/minha-saude" element={<MinhaSaude />} />
         <Route path="/minha-saude/exames" element={<ResultadosExames />} />
         <Route path="/minha-saude/documento" element={<DocumentoMedico />} />
+        <Route path="/minha-saude/documentos" element={<PrescricoesAtestados />} />
+        <Route path="/minha-saude/documento/:tipo" element={<DocumentoView />} />
         <Route path="/minha-saude/informacoes" element={<InformacoesSaude />} />
         <Route path="/minha-saude/agendamentos" element={<MeusAgendamentos />} />
         <Route path="/minha-saude/agendamentos/:id" element={<AgendamentoDetalhe />} />

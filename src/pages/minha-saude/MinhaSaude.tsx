@@ -1,4 +1,4 @@
-import { FileText, ClipboardList, CalendarCheck, HeartPulse, ChevronRight } from 'lucide-react';
+import { FileText, ClipboardList, CalendarCheck, HeartPulse, ChevronRight, FileCheck2 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
@@ -8,6 +8,7 @@ const ITEMS = [
     { to: '/minha-saude/exames', icon: FileText, color: 'text-emerald-500', bg: 'bg-emerald-50', title: 'Resultados de Exames', desc: 'Acompanhe e anexe seus exames' },
     { to: '/minha-saude/informacoes', icon: HeartPulse, color: 'text-rose-500', bg: 'bg-rose-50', title: 'Minhas Informações de Saúde', desc: 'Seu prontuário e histórico' },
     { to: '/minha-saude/pre-consulta', icon: ClipboardList, color: 'text-violet-500', bg: 'bg-violet-50', title: 'Perguntas Pré-Consulta', desc: 'Responda antes do atendimento' },
+    { to: '/minha-saude/documentos', icon: FileCheck2, color: 'text-amber-500', bg: 'bg-amber-50', title: 'Prescrições e Atestados', desc: 'Documentos dos seus atendimentos' },
 ];
 
 export function MinhaSaude() {
