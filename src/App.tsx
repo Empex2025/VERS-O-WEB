@@ -17,6 +17,8 @@ import { Perfil, PerfilPaciente, PerfilPrivado } from './pages/perfil/Perfil';
 import { MeuPerfil } from './pages/meu-perfil/MeuPerfil';
 import { EditarPerfil } from './pages/meu-perfil/EditarPerfil';
 import { TipoPerfil } from './pages/meu-perfil/TipoPerfil';
+import { DadosPerfil } from './pages/meu-perfil/DadosPerfil';
+import { MinhasCurtidas } from './pages/meu-perfil/MinhasCurtidas';
 import { OpcoesPerfil } from './pages/meu-perfil/OpcoesPerfil';
 import { Salvos } from './pages/meu-perfil/Salvos';
 import { PoliticaPrivacidade, TermosUso } from './pages/meu-perfil/LegalPages';
@@ -85,6 +87,8 @@ function App() {
         <Route path="/meu-perfil" element={<MeuPerfil />} />
         <Route path="/meu-perfil/editar" element={<EditarPerfil />} />
         <Route path="/meu-perfil/tipo-perfil" element={<TipoPerfil />} />
+        <Route path="/meu-perfil/dados" element={<DadosPerfil />} />
+        <Route path="/meu-perfil/curtidas" element={<MinhasCurtidas />} />
         <Route path="/meu-perfil/opcoes" element={<OpcoesPerfil />} />
         <Route path="/meu-perfil/salvos" element={<Salvos />} />
         <Route path="/meu-perfil/politica" element={<PoliticaPrivacidade />} />

@@ -3,13 +3,15 @@ import {
     Search, ChevronLeft, ChevronRight, X, Lock, Phone, MapPin, CreditCard,
     BadgeCheck, History, Bookmark, Smartphone, Info, Eye, HelpCircle,
     ShieldCheck, FileText, Star, Share2, LogOut, UserRound, Check,
-    Trash2, Plus, Pencil,
+    Trash2, Plus, Pencil, Bell, Heart,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
+import { Avatar } from '../../components/ui/Avatar';
 import { authService } from '../../services/authService';
 import { profileService } from '../../services/profileService';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useApiData } from '../../hooks/useApiData';
 import logoImage from '../../assets/login/logo-login.png';
 
@@ -19,29 +21,38 @@ type ModalKey =
 
 export function OpcoesPerfil() {
     const navigate = useNavigate();
+    const user = useAuthStore((s) => s.user) as { nome?: string; tipo_usuario?: string } | null;
     const [modal, setModal] = useState<ModalKey>(null);
     const [genericTitle, setGenericTitle] = useState('');
+    const [logout, setLogout] = useState(false);
 
     const openGeneric = (title: string) => { setGenericTitle(title); setModal('generico'); };
 
-    const CONTA = [
-        { icon: Lock, label: 'Privacidade da Conta', onClick: () => setModal('privacidade') },
+    const MEUS_DADOS = [
+        { icon: UserRound, label: 'Dados do Perfil', onClick: () => navigate('/meu-perfil/dados') },
+        { icon: BadgeCheck, label: 'Meus Documentos', onClick: () => setModal('documentos') },
         { icon: Phone, label: 'Meus Contatos', onClick: () => setModal('contatos') },
         { icon: MapPin, label: 'Meus Endereços', onClick: () => setModal('enderecos') },
         { icon: CreditCard, label: 'Meus Cartões', onClick: () => setModal('cartoes') },
-        { icon: BadgeCheck, label: 'Meus Documentos', onClick: () => setModal('documentos') },
-        { icon: History, label: 'Histórico da conta', onClick: () => navigate('/meu-perfil/historico') },
-        { icon: Bookmark, label: 'Salvos', onClick: () => navigate('/meu-perfil/salvos') },
-        { icon: Smartphone, label: 'Permissões do Dispositivo', onClick: () => setModal('permissoes') },
-        { icon: Info, label: 'Versão do Sistema', onClick: () => setModal('sobre') },
+        { icon: Lock, label: 'Privacidade da Conta', onClick: () => setModal('privacidade') },
     ];
-
+    const APLICATIVO = [
+        { icon: Bell, label: 'Notificações', onClick: () => navigate('/notificacoes') },
+        { icon: Smartphone, label: 'Permissões do Aplicativo', onClick: () => setModal('permissoes') },
+    ];
+    const ATIVIDADE = [
+        { icon: History, label: 'Histórico da Conta', onClick: () => navigate('/meu-perfil/historico') },
+        { icon: Heart, label: 'Minhas Curtidas', onClick: () => navigate('/meu-perfil/curtidas') },
+        { icon: Bookmark, label: 'Salvos', onClick: () => navigate('/meu-perfil/salvos') },
+    ];
     const SUPORTE = [
         { icon: Eye, label: 'Acessibilidade', onClick: () => setModal('acessibilidade') },
         { icon: HelpCircle, label: 'Central de Ajuda e Feedback', onClick: () => navigate('/meu-perfil/ajuda') },
         { icon: Info, label: 'Sobre o Aplicativo', onClick: () => setModal('sobre') },
         { icon: ShieldCheck, label: 'Política de Privacidade', onClick: () => navigate('/meu-perfil/politica') },
         { icon: FileText, label: 'Termos de Uso', onClick: () => navigate('/meu-perfil/termos') },
+    ];
+    const EXTRA = [
         { icon: Star, label: 'Avaliar', onClick: () => openGeneric('Avaliar') },
         { icon: Share2, label: 'Compartilhar Aplicativo', onClick: () => openGeneric('Compartilhar Aplicativo') },
     ];
@@ -57,15 +68,38 @@ export function OpcoesPerfil() {
                         <input placeholder="Busque por pessoas, assuntos e muito mais..." className="w-full bg-white border border-gray-200 rounded-xl py-3 pl-11 pr-4 text-sm outline-none" />
                     </div>
 
-                    <Section title="Minha Conta" items={CONTA} />
+                    <Section title="Meus Dados" items={MEUS_DADOS} />
+                    <Section title="Aplicativo" items={APLICATIVO} />
+                    <Section title="Atividade" items={ATIVIDADE} />
                     <Section title="Suporte e Segurança" items={SUPORTE} />
+                    <div className="mb-2">
+                        <div className="flex flex-col">
+                            {EXTRA.map(({ icon: Icon, label, onClick }) => (
+                                <button key={label} onClick={onClick} className="flex items-center gap-3 px-3 py-3 rounded-lg hover:bg-gray-50 transition-colors text-sm text-gray-700">
+                                    <Icon size={18} className="text-[#407BFF]" />
+                                    <span className="flex-1 text-left font-medium">{label}</span>
+                                    <ChevronRight size={16} className="text-gray-300" />
+                                </button>
+                            ))}
+                        </div>
+                    </div>
 
                     <button
-                        onClick={async () => { await authService.logout(); navigate('/'); }}
-                        className="w-full flex items-center gap-3 px-4 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors text-sm font-semibold mt-1"
+                        onClick={() => setLogout(true)}
+                        className="w-full flex items-center gap-3 px-3 py-3 rounded-xl text-rose-500 hover:bg-rose-50 transition-colors text-sm font-semibold"
                     >
                         <LogOut size={18} /> Sair da minha Conta <ChevronRight size={16} className="ml-auto text-rose-300" />
                     </button>
+
+                    {/* Card do usuário */}
+                    <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-100">
+                        <Avatar name={user?.nome || 'Carlos Magno'} size={40} />
+                        <div className="flex-1">
+                            <p className="text-sm font-bold text-gray-900">{user?.nome || 'Carlos Magno'}</p>
+                            <p className="text-xs text-gray-400 capitalize">{user?.tipo_usuario || 'Paciente'}</p>
+                        </div>
+                        <button onClick={() => navigate('/meu-perfil/tipo-perfil')} className="text-xs font-bold text-[#407BFF] hover:underline">Trocar Perfil</button>
+                    </div>
                 </div>
 
                 {/* Ilustração */}
@@ -75,6 +109,19 @@ export function OpcoesPerfil() {
                     </div>
                 </div>
             </div>
+
+            {/* Modal de logout */}
+            {logout && (
+                <div className="fixed inset-0 z-50 bg-black/40 backdrop-blur-sm flex items-center justify-center p-4" onClick={() => setLogout(false)}>
+                    <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm p-6 text-center" onClick={(e) => e.stopPropagation()}>
+                        <button onClick={() => setLogout(false)} className="float-right text-gray-400"><X size={18} /></button>
+                        <h3 className="text-base font-bold text-gray-900 mt-2">Você tem certeza que quer sair da sua Conta?</h3>
+                        <p className="text-sm text-gray-500 mt-2">Sua conta será desconectada deste dispositivo.</p>
+                        <button onClick={async () => { await authService.logout(); navigate('/'); }} className="w-full mt-5 bg-rose-500 hover:bg-rose-600 text-white font-bold text-sm py-3 rounded-full">Sim, Sair</button>
+                        <button onClick={() => setLogout(false)} className="w-full mt-2 text-rose-500 font-semibold text-sm py-2">Voltar</button>
+                    </div>
+                </div>
+            )}
 
             {modal === 'privacidade' && <PrivacidadeModal onClose={() => setModal(null)} />}
             {modal === 'sobre' && <SobreModal onClose={() => setModal(null)} />}
