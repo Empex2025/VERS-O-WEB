@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Users, Globe, ChevronDown, X, Camera, Image as ImageIcon, UserPlus, MapPin, ChevronRight, Zap, Clapperboard, Radio, Type, Video, Upload } from 'lucide-react';
+import { Users, Globe, ChevronDown, ChevronLeft, X, Camera, Image as ImageIcon, UserPlus, MapPin, ChevronRight, Zap, Clapperboard, Radio, Type, Video, Upload, SlidersHorizontal, ZoomIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Avatar } from '../../components/ui/Avatar';
@@ -140,30 +140,93 @@ function TypeBtn({ icon, label, onClick }: { icon: React.ReactNode; label: strin
 }
 
 const FLASH_COLORS = ['#407BFF', '#10B981', '#8B5CF6', '#F43F5E', '#F59E0B', '#0EA5E9', '#111827', '#EC4899'];
+const FLASH_GRAD = 'from-sky-300 via-blue-400 to-[#407BFF]';
+
 function FlashEditor({ onClose }: { onClose: () => void }) {
+    const [step, setStep] = useState<'media' | 'ajustar' | 'canvas'>('media');
     const [color, setColor] = useState(FLASH_COLORS[0]);
     const [flashText, setFlashText] = useState('');
-    return (
-        <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
-            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
-                <div className="flex items-center justify-between p-4 border-b border-gray-100">
-                    <h3 className="font-bold text-gray-900 flex items-center gap-2"><Type size={18} /> Criar Flash</h3>
-                    <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
+    const [zoom, setZoom] = useState(1);
+    const [hasMedia, setHasMedia] = useState(false);
+
+    // ---- Passo 1: adicionar mídia ----
+    if (step === 'media') {
+        return (
+            <Overlay>
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden">
+                    <Head onBack={onClose} onClose={onClose}>Adicione Mídia no Flash</Head>
+                    <div className="p-10 flex flex-col items-center">
+                        <div className="flex items-center gap-1 text-[#407BFF] mb-4">
+                            <ImageIcon size={56} strokeWidth={1.5} /><Video size={56} strokeWidth={1.5} />
+                        </div>
+                        <p className="text-base font-bold text-gray-900 mb-5">Arraste as fotos e os vídeos aqui</p>
+                        <button onClick={() => { setHasMedia(true); setStep('ajustar'); }} className="bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm px-6 py-3 rounded-full transition-colors">
+                            Selecione do Computador
+                        </button>
+                        <button onClick={() => setStep('canvas')} className="text-xs font-semibold text-gray-400 hover:text-gray-600 mt-4">Pular e usar cor de fundo</button>
+                    </div>
                 </div>
+            </Overlay>
+        );
+    }
+
+    // ---- Passo 2: encaixar / zoom ----
+    if (step === 'ajustar') {
+        return (
+            <Overlay>
+                <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden">
+                    <Head onBack={() => setStep('media')} onClose={onClose}>Arraste a foto para encaixar na moldura</Head>
+                    <div className="p-5">
+                        <div className="mx-auto w-[240px] aspect-[9/16] rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
+                            <div className={`w-full h-full bg-gradient-to-br ${FLASH_GRAD} transition-transform`} style={{ transform: `scale(${zoom})` }} />
+                        </div>
+                        <div className="flex items-center gap-3 mt-5">
+                            <button className="w-9 h-9 rounded-full bg-[#F3F4F6] flex items-center justify-center text-gray-600"><SlidersHorizontal size={16} /></button>
+                            <button className="w-9 h-9 rounded-full bg-[#407BFF]/10 flex items-center justify-center text-[#407BFF]"><ZoomIn size={16} /></button>
+                            <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-[#407BFF]" />
+                            <button onClick={() => setStep('canvas')} className="bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm px-6 py-2.5 rounded-full transition-colors">Continuar</button>
+                        </div>
+                    </div>
+                </div>
+            </Overlay>
+        );
+    }
+
+    // ---- Passo 3: canvas (texto + cor) ----
+    return (
+        <Overlay>
+            <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
+                <Head onBack={() => setStep(hasMedia ? 'ajustar' : 'media')} onClose={onClose}><Type size={18} className="inline mr-1" /> Criar Flash</Head>
                 <div className="p-4">
-                    <div className="rounded-xl aspect-[9/16] flex items-center justify-center p-6 transition-colors" style={{ backgroundColor: color }}>
-                        <textarea value={flashText} onChange={(e) => setFlashText(e.target.value)} placeholder="Escreva algo..." className="w-full bg-transparent text-white text-center text-xl font-bold outline-none resize-none placeholder-white/60" rows={4} />
+                    <div className="relative rounded-xl aspect-[9/16] overflow-hidden flex items-center justify-center p-6" style={hasMedia ? undefined : { backgroundColor: color }}>
+                        {hasMedia && <div className={`absolute inset-0 bg-gradient-to-br ${FLASH_GRAD}`} style={{ transform: `scale(${zoom})` }} />}
+                        <textarea value={flashText} onChange={(e) => setFlashText(e.target.value)} placeholder="Escreva algo..." className="relative w-full bg-transparent text-white text-center text-xl font-bold outline-none resize-none placeholder-white/60" rows={4} />
                     </div>
-                    <div className="flex gap-2 justify-center mt-4">
-                        {FLASH_COLORS.map((c) => (
-                            <button key={c} onClick={() => setColor(c)} className={`w-7 h-7 rounded-full transition-transform ${color === c ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''}`} style={{ backgroundColor: c }} />
-                        ))}
-                    </div>
+                    {!hasMedia && (
+                        <div className="flex gap-2 justify-center mt-4">
+                            {FLASH_COLORS.map((c) => (
+                                <button key={c} onClick={() => setColor(c)} className={`w-7 h-7 rounded-full transition-transform ${color === c ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''}`} style={{ backgroundColor: c }} />
+                            ))}
+                        </div>
+                    )}
                 </div>
                 <div className="p-4 border-t border-gray-100">
                     <button onClick={onClose} className="w-full bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors">Publicar Flash</button>
                 </div>
             </div>
+        </Overlay>
+    );
+}
+
+function Overlay({ children }: { children: React.ReactNode }) {
+    return <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">{children}</div>;
+}
+function Head({ children, onBack, onClose }: { children: React.ReactNode; onBack: () => void; onClose: () => void }) {
+    return (
+        <div className="flex items-center gap-2 p-4 border-b border-gray-100">
+            <button onClick={onBack} className="text-gray-500 hover:text-gray-700"><ChevronLeft size={18} /></button>
+            <h3 className="font-bold text-gray-900 flex-1">{children}</h3>
+            <button onClick={onClose} className="w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><X size={16} /></button>
         </div>
     );
 }

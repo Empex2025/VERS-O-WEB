@@ -6,7 +6,7 @@ import { suggestions } from '../../data/social';
 // Alvos de compartilhamento. Ícones de marca são representados por glifos/ícones
 // neutros para evitar dependência de brand icons.
 const TARGETS: { label: string; icon?: React.ReactNode; glyph?: string; bg: string }[] = [
-    { label: 'Copiar link', icon: <Link2 size={20} />, bg: 'bg-gray-700' },
+    { label: 'Copiar ligação', icon: <Link2 size={20} />, bg: 'bg-gray-700' },
     { label: 'Facebook', glyph: 'f', bg: 'bg-[#1877F2]' },
     { label: 'Messenger', icon: <MessageCircle size={20} />, bg: 'bg-[#0084FF]' },
     { label: 'WhatsApp', icon: <MessageCircle size={20} />, bg: 'bg-[#25D366]' },
@@ -20,7 +20,7 @@ export function ShareModal({ open, onClose }: { open: boolean; onClose: () => vo
     if (!open) return null;
 
     const handleTarget = (label: string) => {
-        if (label === 'Copiar link') {
+        if (label === 'Copiar ligação') {
             navigator.clipboard?.writeText(window.location.href).catch(() => {});
             setCopied(true);
             setTimeout(() => setCopied(false), 1500);
@@ -66,10 +66,10 @@ export function ShareModal({ open, onClose }: { open: boolean; onClose: () => vo
                     {TARGETS.map((t) => (
                         <button key={t.label} onClick={() => handleTarget(t.label)} className="flex flex-col items-center gap-1.5 shrink-0">
                             <span className={`w-11 h-11 rounded-full flex items-center justify-center text-white font-bold ${t.bg}`}>
-                                {t.label === 'Copiar link' && copied ? <Check size={20} /> : (t.icon ?? <span className="text-lg">{t.glyph}</span>)}
+                                {t.label === 'Copiar ligação' && copied ? <Check size={20} /> : (t.icon ?? <span className="text-lg">{t.glyph}</span>)}
                             </span>
                             <span className="text-[11px] text-white/70 whitespace-nowrap">
-                                {t.label === 'Copiar link' && copied ? 'Copiado!' : t.label}
+                                {t.label === 'Copiar ligação' && copied ? 'Copiado!' : t.label}
                             </span>
                         </button>
                     ))}
