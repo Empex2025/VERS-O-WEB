@@ -56,7 +56,7 @@ import { VerificacaoConcluida } from './pages/verificacao-profissional/Verificac
 import { ProntoParaAtender } from './pages/verificacao-profissional/ProntoParaAtender';
 import { CriarPost } from './pages/criar-post/CriarPost';
 import { Conversas } from './pages/conversas/Conversas';
-import { Flashs } from './pages/placeholder/ComingSoon';
+import { Flashs } from './pages/flashs/Flashs';
 import { MinhaSaude } from './pages/minha-saude/MinhaSaude';
 import { ResultadosExames } from './pages/minha-saude/ResultadosExames';
 import { DocumentoMedico } from './pages/minha-saude/DocumentoMedico';
