@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { Image, Zap, Clapperboard, Radio, StickyNote, Globe, ChevronDown, X, Type, Video, Upload } from 'lucide-react';
+import { Users, Globe, ChevronDown, X, Camera, Image as ImageIcon, UserPlus, MapPin, ChevronRight, Zap, Clapperboard, Radio, Type, Video, Upload } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Avatar } from '../../components/ui/Avatar';
@@ -7,14 +7,10 @@ import { currentUser } from '../../data/social';
 import { socialService } from '../../services/socialService';
 import { useAuthStore } from '../../store/useAuthStore';
 
-type Editor = null | 'flash' | 'aovivo' | 'media' | 'pulse';
-
-const OPTIONS: { label: string; icon: typeof Image; color: string; editor: Editor }[] = [
-    { label: 'Nota', icon: StickyNote, color: 'text-amber-500', editor: null },
-    { label: 'Fotos e Vídeos', icon: Image, color: 'text-rose-500', editor: 'media' },
-    { label: 'Flash', icon: Zap, color: 'text-[#407BFF]', editor: 'flash' },
-    { label: 'Pulse', icon: Clapperboard, color: 'text-emerald-500', editor: 'pulse' },
-    { label: 'Ao Vivo', icon: Radio, color: 'text-red-500', editor: 'aovivo' },
+type Editor = null | 'flash' | 'aovivo' | 'pulse';
+const AUDIENCES = [
+    { id: 'seguidores', label: 'Apenas Seguidores', icon: Users },
+    { id: 'publico', label: 'Público', icon: Globe },
 ];
 
 export function CriarPost() {
@@ -22,96 +18,131 @@ export function CriarPost() {
     const [text, setText] = useState('');
     const [editor, setEditor] = useState<Editor>(null);
     const [publishing, setPublishing] = useState(false);
+    const [audOpen, setAudOpen] = useState(false);
+    const [aud, setAud] = useState(AUDIENCES[0]);
+    const [photos, setPhotos] = useState<string[]>([]);
+    const [pessoas, setPessoas] = useState(0);
+    const [local, setLocal] = useState<string | null>(null);
     const userId = useAuthStore((s) => s.user?.id);
 
     const handlePublish = async () => {
-        if (!text.trim()) return;
+        if (!text.trim() && photos.length === 0) return;
         setPublishing(true);
         try {
-            await socialService.posts.create({
-                conteudo: text.trim(),
-                autor_id: userId ?? 0,
-                tipo_conteudo: 'texto',
-            });
-        } catch {
-            // API fora do ar: segue em modo demo
-        } finally {
+            await socialService.posts.create({ conteudo: text.trim(), autor_id: userId ?? 0, tipo_conteudo: photos.length ? 'foto' : 'texto' });
+        } catch { /* modo demo */ } finally {
             setPublishing(false);
             navigate('/inicio');
         }
     };
 
-    return (
-        <AppShell>
-            <div className="max-w-xl mx-auto">
-                <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5">
-                    <h1 className="text-lg font-bold text-gray-900 mb-4">Criar publicação</h1>
+    const GRADS = ['from-[#407BFF] to-violet-500', 'from-emerald-400 to-teal-500', 'from-slate-500 to-slate-700', 'from-amber-300 to-rose-400'];
 
+    return (
+        <AppShell rightRail={null}>
+            <div className="max-w-2xl mx-auto">
+                <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-5">
                     {/* Autor + audiência */}
-                    <div className="flex items-center gap-3 mb-4">
-                        <Avatar name={currentUser.name} size={44} />
-                        <div>
-                            <p className="text-sm font-bold text-gray-900">{currentUser.name}</p>
-                            <button className="flex items-center gap-1 text-xs text-gray-500 bg-gray-100 px-2 py-0.5 rounded-full mt-0.5">
-                                <Globe size={12} /> Público <ChevronDown size={12} />
+                    <div className="flex items-center gap-3">
+                        <Avatar name={currentUser.name} size={40} />
+                        <div className="relative">
+                            <button onClick={() => setAudOpen((v) => !v)} className="flex items-center gap-2 text-sm font-bold text-gray-800 bg-[#01AEA4]/10 text-[#01AEA4] px-3 py-1.5 rounded-full">
+                                <aud.icon size={15} /> {aud.label} <ChevronDown size={14} />
                             </button>
+                            {audOpen && (
+                                <div className="absolute top-full left-0 mt-1 bg-white rounded-xl shadow-lg border border-gray-100 z-10 w-48 overflow-hidden">
+                                    {AUDIENCES.map((a) => (
+                                        <button key={a.id} onClick={() => { setAud(a); setAudOpen(false); }} className="w-full flex items-center gap-2 px-3 py-2.5 text-sm text-gray-700 hover:bg-gray-50 text-left">
+                                            <a.icon size={15} className="text-gray-500" /> {a.label}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
                         </div>
+                        <button onClick={() => navigate('/inicio')} className="ml-auto w-8 h-8 rounded-full bg-gray-100 flex items-center justify-center text-gray-500 hover:bg-gray-200"><X size={16} /></button>
                     </div>
 
-                    {/* Composer */}
+                    {/* Texto */}
                     <textarea
                         value={text}
-                        onChange={(e) => setText(e.target.value)}
+                        onChange={(e) => setText(e.target.value.slice(0, 2000))}
                         placeholder="No que você está pensando?"
-                        rows={5}
-                        className="w-full text-sm text-gray-700 outline-none resize-none placeholder-gray-400"
+                        rows={photos.length ? 2 : 5}
+                        className="w-full text-base text-gray-800 outline-none resize-none placeholder-gray-400 mt-3"
                     />
+                    <p className="text-xs text-gray-400">{text.length}/2000</p>
 
-                    {/* Adicionar à publicação */}
-                    <p className="text-xs font-semibold text-gray-400 border-t border-gray-100 pt-4 mt-2 mb-2">Adicionar à publicação</p>
-                    <div className="flex flex-wrap gap-2">
-                        {OPTIONS.map(({ label, icon: Icon, color, editor: ed }) => (
-                            <button
-                                key={label}
-                                onClick={() => ed && setEditor(ed)}
-                                className="flex items-center gap-2 text-sm font-medium text-gray-600 bg-gray-50 hover:bg-gray-100 px-3 py-2 rounded-lg transition-colors"
-                            >
-                                <Icon size={18} className={color} /> {label}
-                            </button>
-                        ))}
+                    {/* Tags */}
+                    {(pessoas > 0 || local) && (
+                        <div className="flex flex-col gap-1.5 mt-3">
+                            {pessoas > 0 && <p className="flex items-center gap-2 text-sm text-gray-600"><UserPlus size={15} className="text-gray-400" /> Com outras {pessoas} pessoas</p>}
+                            {local && <p className="flex items-center gap-2 text-sm text-gray-600"><MapPin size={15} className="text-gray-400" /> {local}</p>}
+                        </div>
+                    )}
+
+                    {/* Carrossel de fotos */}
+                    {photos.length > 0 && (
+                        <>
+                            <div className="flex gap-2 overflow-x-auto mt-3 pb-1">
+                                {photos.map((g, i) => (
+                                    <div key={i} className="relative w-40 h-56 rounded-xl overflow-hidden shrink-0">
+                                        <div className={`w-full h-full bg-gradient-to-br ${g}`} />
+                                        <button onClick={() => setPhotos((p) => p.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center"><X size={12} /></button>
+                                    </div>
+                                ))}
+                            </div>
+                            <p className="text-xs text-gray-400 mt-1">{photos.length} foto{photos.length > 1 ? 's' : ''} adicionada{photos.length > 1 ? 's' : ''}</p>
+                        </>
+                    )}
+
+                    {/* Toolbar + Publicar */}
+                    <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
+                        <div className="flex items-center gap-2">
+                            <Tool icon={<Camera size={17} />} onClick={() => setPhotos((p) => [...p, GRADS[p.length % GRADS.length]])} />
+                            <Tool icon={<ImageIcon size={17} />} onClick={() => setPhotos((p) => [...p, GRADS[p.length % GRADS.length]])} />
+                            <Tool icon={<UserPlus size={17} />} onClick={() => setPessoas((n) => n + 1)} />
+                            <Tool icon={<MapPin size={17} />} onClick={() => setLocal('Academia FitHarmony')} />
+                        </div>
+                        <button
+                            onClick={handlePublish}
+                            disabled={(!text.trim() && photos.length === 0) || publishing}
+                            className="text-sm font-bold px-6 py-2.5 rounded-full transition-colors disabled:bg-gray-200 disabled:text-gray-400 bg-[#407BFF] hover:bg-blue-600 text-white"
+                        >
+                            {publishing ? 'Publicando...' : 'Publicar'}
+                        </button>
                     </div>
+                </div>
 
-                    <button
-                        onClick={handlePublish}
-                        disabled={!text.trim() || publishing}
-                        className={`w-full mt-4 font-bold text-sm py-3 rounded-full transition-colors ${
-                            text.trim() && !publishing ? 'bg-[#407BFF] hover:bg-blue-600 text-white' : 'bg-[#E5E7EB] text-gray-400 cursor-not-allowed'
-                        }`}
-                    >
-                        {publishing ? 'Publicando...' : 'Publicar'}
-                    </button>
+                {/* Outros tipos */}
+                <div className="flex flex-wrap gap-2 mt-4">
+                    <TypeBtn icon={<Zap size={16} className="text-[#407BFF]" />} label="Flash" onClick={() => setEditor('flash')} />
+                    <TypeBtn icon={<Clapperboard size={16} className="text-emerald-500" />} label="Pulse" onClick={() => setEditor('pulse')} />
+                    <TypeBtn icon={<Radio size={16} className="text-red-500" />} label="Ao Vivo" onClick={() => setEditor('aovivo')} />
                 </div>
             </div>
 
             {editor === 'flash' && <FlashEditor onClose={() => setEditor(null)} />}
             {editor === 'aovivo' && <LiveModal onClose={() => setEditor(null)} />}
-            {(editor === 'media' || editor === 'pulse') && (
-                <UploadModal
-                    title={editor === 'media' ? 'Fotos e Vídeos' : 'Criar Pulse'}
-                    hint={editor === 'media' ? 'Arraste fotos e vídeos ou selecione do dispositivo' : 'Envie um vídeo vertical para criar seu Pulse'}
-                    onClose={() => setEditor(null)}
-                />
-            )}
+            {editor === 'pulse' && <UploadModal title="Criar Pulse" hint="Envie um vídeo vertical para criar seu Pulse" onClose={() => setEditor(null)} />}
         </AppShell>
     );
 }
 
-const FLASH_COLORS = ['#407BFF', '#10B981', '#8B5CF6', '#F43F5E', '#F59E0B', '#0EA5E9', '#111827', '#EC4899'];
+function Tool({ icon, onClick }: { icon: React.ReactNode; onClick?: () => void }) {
+    return <button onClick={onClick} className="w-9 h-9 rounded-full bg-[#F3F4F6] flex items-center justify-center text-gray-600 hover:bg-gray-200 transition-colors">{icon}</button>;
+}
+function TypeBtn({ icon, label, onClick }: { icon: React.ReactNode; label: string; onClick?: () => void }) {
+    return (
+        <button onClick={onClick} className="flex items-center gap-2 text-sm font-medium text-gray-700 bg-white border border-gray-200 hover:border-[#407BFF]/40 px-4 py-2 rounded-full transition-colors">
+            {icon} {label} <ChevronRight size={14} className="text-gray-300" />
+        </button>
+    );
+}
 
+const FLASH_COLORS = ['#407BFF', '#10B981', '#8B5CF6', '#F43F5E', '#F59E0B', '#0EA5E9', '#111827', '#EC4899'];
 function FlashEditor({ onClose }: { onClose: () => void }) {
     const [color, setColor] = useState(FLASH_COLORS[0]);
     const [flashText, setFlashText] = useState('');
-
     return (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
@@ -119,42 +150,23 @@ function FlashEditor({ onClose }: { onClose: () => void }) {
                     <h3 className="font-bold text-gray-900 flex items-center gap-2"><Type size={18} /> Criar Flash</h3>
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
                 </div>
-
-                {/* Canvas */}
                 <div className="p-4">
                     <div className="rounded-xl aspect-[9/16] flex items-center justify-center p-6 transition-colors" style={{ backgroundColor: color }}>
-                        <textarea
-                            value={flashText}
-                            onChange={(e) => setFlashText(e.target.value)}
-                            placeholder="Escreva algo..."
-                            className="w-full bg-transparent text-white text-center text-xl font-bold outline-none resize-none placeholder-white/60"
-                            rows={4}
-                        />
+                        <textarea value={flashText} onChange={(e) => setFlashText(e.target.value)} placeholder="Escreva algo..." className="w-full bg-transparent text-white text-center text-xl font-bold outline-none resize-none placeholder-white/60" rows={4} />
                     </div>
-
-                    {/* Paleta de cores */}
                     <div className="flex gap-2 justify-center mt-4">
                         {FLASH_COLORS.map((c) => (
-                            <button
-                                key={c}
-                                onClick={() => setColor(c)}
-                                className={`w-7 h-7 rounded-full transition-transform ${color === c ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''}`}
-                                style={{ backgroundColor: c }}
-                            />
+                            <button key={c} onClick={() => setColor(c)} className={`w-7 h-7 rounded-full transition-transform ${color === c ? 'ring-2 ring-offset-2 ring-gray-400 scale-110' : ''}`} style={{ backgroundColor: c }} />
                         ))}
                     </div>
                 </div>
-
                 <div className="p-4 border-t border-gray-100">
-                    <button onClick={onClose} className="w-full bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors">
-                        Publicar Flash
-                    </button>
+                    <button onClick={onClose} className="w-full bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors">Publicar Flash</button>
                 </div>
             </div>
         </div>
     );
 }
-
 function LiveModal({ onClose }: { onClose: () => void }) {
     return (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
@@ -164,20 +176,14 @@ function LiveModal({ onClose }: { onClose: () => void }) {
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
                 </div>
                 <div className="p-4">
-                    <div className="rounded-xl aspect-video bg-gray-900 flex flex-col items-center justify-center text-white/50 gap-2">
-                        <Video size={40} />
-                        <p className="text-sm">Câmera e microfone</p>
-                    </div>
+                    <div className="rounded-xl aspect-video bg-gray-900 flex flex-col items-center justify-center text-white/50 gap-2"><Video size={40} /><p className="text-sm">Câmera e microfone</p></div>
                     <p className="text-xs text-gray-500 text-center mt-3">Ao iniciar, seus seguidores serão notificados da transmissão.</p>
-                    <button onClick={onClose} className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white font-bold text-sm py-3 rounded-full transition-colors">
-                        Iniciar transmissão
-                    </button>
+                    <button onClick={onClose} className="w-full mt-4 bg-red-500 hover:bg-red-600 text-white font-bold text-sm py-3 rounded-full transition-colors">Iniciar transmissão</button>
                 </div>
             </div>
         </div>
     );
 }
-
 function UploadModal({ title, hint, onClose }: { title: string; hint: string; onClose: () => void }) {
     return (
         <div className="fixed inset-0 z-50 bg-black/60 flex items-center justify-center p-4">
@@ -187,13 +193,8 @@ function UploadModal({ title, hint, onClose }: { title: string; hint: string; on
                     <button onClick={onClose} className="text-gray-400 hover:text-gray-600"><X size={18} /></button>
                 </div>
                 <div className="p-4">
-                    <div className="rounded-xl border-2 border-dashed border-gray-200 aspect-video flex flex-col items-center justify-center text-gray-400 gap-2">
-                        <Upload size={36} />
-                        <p className="text-sm text-center px-6">{hint}</p>
-                    </div>
-                    <button className="w-full mt-4 bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors">
-                        Selecionar arquivo
-                    </button>
+                    <div className="rounded-xl border-2 border-dashed border-gray-200 aspect-video flex flex-col items-center justify-center text-gray-400 gap-2"><Upload size={36} /><p className="text-sm text-center px-6">{hint}</p></div>
+                    <button className="w-full mt-4 bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors">Selecionar arquivo</button>
                 </div>
             </div>
         </div>
