@@ -1,5 +1,6 @@
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
 import { Login } from './pages/login/Login';
+import { LoadSplash } from './pages/login/LoadSplash';
 import { Home } from './pages/home/Home';
 import { Register } from './pages/cadastro/Register';
 import { RegisterPatient } from './pages/cadastro/RegisterPatient';
@@ -78,6 +79,7 @@ function App() {
     <BrowserRouter>
       <Routes>
         <Route path="/" element={<Login />} />
+        <Route path="/load" element={<LoadSplash />} />
         <Route path="/inicio" element={<Home />} />
         <Route path="/explorar" element={<Explorar />} />
         <Route path="/pulses" element={<Pulses />} />

@@ -20,21 +20,21 @@ export function Login() {
 
         // Atalho de desenvolvimento: sem e-mail, entra direto (modo demo).
         if (!email.trim()) {
-            navigate('/inicio');
+            navigate('/load');
             return;
         }
 
         setLoading(true);
         try {
             await authService.login(email.trim(), password);
-            navigate('/inicio');
+            navigate('/load');
         } catch (err) {
             if (err instanceof ApiError) {
                 setError(err.message); // credenciais inválidas / e-mail não verificado
             } else {
                 // API ainda não publicada / fora do ar: segue em modo demo
                 console.warn('API indisponível — entrando em modo demo.', err);
-                navigate('/inicio');
+                navigate('/load');
             }
         } finally {
             setLoading(false);
