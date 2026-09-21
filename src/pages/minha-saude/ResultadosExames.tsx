@@ -48,8 +48,8 @@ export function ResultadosExames() {
                     />
                     <X size={16} className="absolute right-4 top-1/2 -translate-y-1/2 text-gray-400" />
                 </div>
-                <button className="flex items-center gap-1 text-xs text-gray-500 border border-gray-200 rounded-lg px-3 py-1.5 mb-4">
-                    Do recentes a mais antigos <ChevronDown size={14} />
+                <button className="flex items-center gap-1.5 text-xs font-semibold text-gray-500 bg-gray-100 rounded-lg px-3 py-1.5 mb-4 hover:bg-gray-200 transition-colors">
+                    De recentes a mais antigos <ChevronDown size={13} />
                 </button>
 
                 {/* Upload */}
@@ -77,8 +77,8 @@ export function ResultadosExames() {
                             </div>
                             {/* Status */}
                             <div className="pt-3">
-                                <span className={`inline-block text-[11px] font-bold px-2 py-0.5 rounded-full ${
-                                    e.status === 'Liberado' ? 'bg-emerald-100 text-emerald-600' : 'bg-amber-100 text-amber-600'
+                                <span className={`inline-block text-[11px] font-bold px-2.5 py-1 rounded-full ${
+                                    e.status === 'Liberado' ? 'bg-emerald-50 text-emerald-600' : 'bg-[#407BFF]/10 text-[#407BFF]'
                                 }`}>
                                     {e.status}
                                 </span>
