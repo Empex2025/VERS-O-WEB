@@ -20,34 +20,38 @@ export function PosConsulta() {
                 <span className="text-sm font-semibold text-gray-700">Atendimento Concluído</span>
             </div>
 
-            <main className="flex-1 flex items-center justify-center px-6 py-10">
-                <div className="w-full max-w-md text-center">
-                    <div className="w-full h-40 rounded-2xl bg-[#407BFF]/5 flex items-center justify-center mb-8">
-                        <PartyPopper size={56} className="text-[#407BFF]" />
+            <main className="flex-1 px-4 md:px-8 py-10">
+                <div className="max-w-5xl mx-auto grid md:grid-cols-2 gap-10 items-center">
+                    {/* Conteúdo */}
+                    <div>
+                        <h1 className="text-xl font-bold text-gray-900">Atendimento finalizado com Sucesso.</h1>
+                        <p className="text-sm text-gray-500 mt-2">
+                            A consulta foi encerrada pelo profissional. Este atendimento possui um retorno incluso,
+                            vá até a página do atendimento para agendar o retorno.
+                        </p>
+
+                        {/* Avaliação */}
+                        <p className="text-sm font-semibold text-gray-700 mt-8 mb-2">Como você avalia este atendimento?</p>
+                        <div className="flex gap-1 mb-6">
+                            {[1, 2, 3, 4, 5].map((s) => (
+                                <button key={s} onClick={() => { setRating(s); setPhase('survey'); }}>
+                                    <Star size={30} className={s <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
+                                </button>
+                            ))}
+                        </div>
+
+                        {/* Ações */}
+                        <div className="flex flex-col gap-1">
+                            <ActionRow icon={<FileText size={18} />} label="Página do Atendimento" onClick={() => navigate('/minha-saude/agendamentos')} />
+                            <ActionRow icon={<Share2 size={18} />} label="Compartilhar Profissional" />
+                            <ActionRow icon={<HelpCircle size={18} />} label="Ajuda e Suporte" />
+                            <ActionRow icon={<Flag size={18} />} label="Denunciar Atendimento" danger />
+                        </div>
                     </div>
 
-                    <h1 className="text-xl font-bold text-gray-900">Atendimento finalizado com Sucesso.</h1>
-                    <p className="text-sm text-gray-500 mt-2">
-                        A consulta foi encerrada pelo profissional. Este atendimento possui um retorno incluso,
-                        vá até a página do atendimento para agendar o retorno.
-                    </p>
-
-                    {/* Avaliação */}
-                    <p className="text-sm font-semibold text-gray-700 mt-6 mb-2">Como você avalia este atendimento?</p>
-                    <div className="flex justify-center gap-1 mb-6">
-                        {[1, 2, 3, 4, 5].map((s) => (
-                            <button key={s} onClick={() => { setRating(s); setPhase('survey'); }}>
-                                <Star size={30} className={s <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
-                            </button>
-                        ))}
-                    </div>
-
-                    {/* Ações */}
-                    <div className="flex flex-col gap-1 text-left">
-                        <ActionRow icon={<FileText size={18} />} label="Página de Atendimento" onClick={() => navigate('/minha-saude/agendamentos')} />
-                        <ActionRow icon={<Share2 size={18} />} label="Compartilhar Profissional" />
-                        <ActionRow icon={<HelpCircle size={18} />} label="Ajuda e Suporte" />
-                        <ActionRow icon={<Flag size={18} />} label="Denunciar Atendimento" danger />
+                    {/* Ilustração */}
+                    <div className="hidden md:flex h-72 rounded-2xl bg-[#407BFF]/5 items-center justify-center">
+                        <PartyPopper size={72} className="text-[#407BFF]" />
                     </div>
                 </div>
             </main>
@@ -61,13 +65,14 @@ export function PosConsulta() {
                             <button onClick={() => setPhase('done')} className="text-gray-400"><X size={18} /></button>
                         </div>
                         <p className="text-xs text-gray-500 text-center mb-2">Como você avalia este atendimento?</p>
-                        <div className="flex justify-center gap-1 mb-4">
+                        <div className="flex justify-center gap-1 mb-1">
                             {[1, 2, 3, 4, 5].map((s) => (
                                 <button key={s} onClick={() => setRating(s)}>
                                     <Star size={26} className={s <= rating ? 'fill-amber-400 text-amber-400' : 'text-gray-300'} />
                                 </button>
                             ))}
                         </div>
+                        {rating > 0 && <p className="text-xs font-bold text-gray-700 text-center mb-4">{['Ruim', 'Regular', 'Bom', 'Muito Bom', 'Excelente'][rating - 1]}</p>}
                         <p className="text-xs font-semibold text-gray-700 mb-1">Comentários</p>
                         <textarea
                             rows={3}
