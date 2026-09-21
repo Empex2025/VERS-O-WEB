@@ -76,6 +76,11 @@ apenas o BBF. Base URL em **`VITE_API_URL`** (`.env`), default `http://localhost
   logout, cadastro (paciente/profissional com senha → `POST /users`), feed (Início), Meus Agendamentos,
   Resultados de Exames, Notificações, Histórico da Conta, Meu Perfil (usuário logado), e os modais de
   Opções de Perfil: Cartões, Endereços, Telefones, Documentos (validação).
+  Também: **Flashs** (`GET /story`), **Minhas Curtidas** (`GET /curtida`), **Prescrições e Atestados**
+  (`GET /document`), **Histórico de Atendimentos** (`GET /agendamento-consulta`) e **Dados do Perfil**
+  (`PUT /users/:id` no "Salvar ajustes") — todas com fallback pro mock via `useApiData`.
+- **Produção**: `.env.production` aponta `VITE_API_URL` para o **BBF na Railway**
+  (`https://isaude-api-production.up.railway.app`); CORS da API já libera `vers-o-web.vercel.app`.
 - **Escritas ligadas (otimista, dispara na API)**: publicar post (`postagem/create`), curtir e comentar
   (`curtida/create`, `comentario/create`), enviar mensagem em Conversas (`POST /conversas`), seguir
   (`seguidor/create` `{ seguindo_id }`), adicionar/excluir cartão, endereço e telefone
