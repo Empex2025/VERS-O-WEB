@@ -10,7 +10,7 @@ import { socialService, toPost, type RawPost, type RawUser } from '../../service
 import { profileService } from '../../services/profileService';
 import { useApiData } from '../../hooks/useApiData';
 
-const TABS = ['Publicações', 'Perfis', 'Pulse'] as const;
+const TABS = ['Publicações', 'Perfis', 'Pulses'] as const;
 
 interface RawSalvamento { tipo_conteudo?: string; postagem?: RawPost }
 
@@ -78,7 +78,7 @@ export function Salvos() {
                     </div>
                 )}
 
-                {tab === 'Pulse' && (
+                {tab === 'Pulses' && (
                     <div className="grid grid-cols-3 gap-2">
                         {Array.from({ length: 6 }).map((_, i) => (
                             <div key={i} className="aspect-[9/16] rounded-lg bg-gray-100 flex items-center justify-center text-gray-300">
