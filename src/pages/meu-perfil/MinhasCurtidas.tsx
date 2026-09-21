@@ -3,13 +3,30 @@ import { MoreHorizontal, ImageIcon } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { PostCard } from '../../components/social/PostCard';
-import { feedPosts } from '../../data/social';
+import { feedPosts, type Post } from '../../data/social';
+import { socialService, toPost, type RawPost, type RawUser } from '../../services/socialService';
+import { profileService } from '../../services/profileService';
+import { useApiData } from '../../hooks/useApiData';
 
 const TABS = ['Publicações', 'Mídia', 'Pulses'] as const;
 
+interface RawCurtida { postagem?: RawPost; postagem_id?: number }
+
+/** Publicações curtidas pelo usuário (autor enriquecido); cai no feed mock quando vazio. */
+async function fetchCurtidas(): Promise<Post[]> {
+    const raw = await socialService.curtidas.list<{ results: RawCurtida[] } | RawCurtida[]>();
+    const list = Array.isArray(raw) ? raw : raw?.results ?? [];
+    const posts = list.map((c) => c.postagem).filter(Boolean) as RawPost[];
+    if (!posts.length) return feedPosts;
+    const ids = [...new Set(posts.map((p) => p.autor_id).filter(Boolean))];
+    const byId = new Map<number, RawUser>();
+    await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<RawUser>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
+    return posts.map((p) => toPost(p, byId.get(p.autor_id)));
+}
+
 export function MinhasCurtidas() {
     const [tab, setTab] = useState<(typeof TABS)[number]>('Publicações');
-    const posts = feedPosts;
+    const { data: posts } = useApiData(fetchCurtidas, feedPosts, []);
 
     return (
         <AppShell rightRail={null}>

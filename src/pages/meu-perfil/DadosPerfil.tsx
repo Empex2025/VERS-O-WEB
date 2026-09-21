@@ -3,14 +3,30 @@ import { Phone, Mail, IdCard, UserRound, CalendarDays, ChevronRight } from 'luci
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { useAuthStore } from '../../store/useAuthStore';
+import { profileService } from '../../services/profileService';
 
 export function DadosPerfil() {
-    const user = useAuthStore((s) => s.user) as { nome?: string; email?: string; telefone?: string } | null;
+    const user = useAuthStore((s) => s.user) as any;
+    const token = useAuthStore((s) => s.token);
+    const setAuth = useAuthStore((s) => s.setAuth);
     const [tel, setTel] = useState(user?.telefone || '(00) 94002-8922');
     const [email, setEmail] = useState(user?.email || 'carlos.magno@email.com');
-    const [cpf, setCpf] = useState('132.456.789-01');
+    const [cpf, setCpf] = useState(user?.cpf || '132.456.789-01');
     const [nome, setNome] = useState(user?.nome || 'Carlos Magno de Souza');
-    const [nasc, setNasc] = useState('01/01/2000');
+    const [nasc, setNasc] = useState(user?.data_nascimento || '01/01/2000');
+    const [saving, setSaving] = useState(false);
+
+    const salvar = async () => {
+        if (!user?.id) return;
+        setSaving(true);
+        const patch = { nome: nome.trim(), email: email.trim(), telefone: tel.trim(), cpf: cpf.trim(), data_nascimento: nasc.trim() };
+        try {
+            await profileService.updateUser(user.id, patch);
+            if (token) setAuth(token, { ...user, ...patch });
+        } catch { /* mantém local (modo demo) */ } finally {
+            setSaving(false);
+        }
+    };
 
     return (
         <AppShell rightRail={null}>
@@ -18,7 +34,7 @@ export function DadosPerfil() {
                 <PageHeader
                     title="Editar Dados"
                     to="/meu-perfil/opcoes"
-                    right={<button className="bg-[#01AEA4] text-white text-xs font-bold px-4 py-1.5 rounded-full hover:bg-teal-600 transition-colors">Salvar ajustes</button>}
+                    right={<button onClick={salvar} disabled={saving} className="bg-[#01AEA4] text-white text-xs font-bold px-4 py-1.5 rounded-full hover:bg-teal-600 transition-colors disabled:opacity-60">{saving ? 'Salvando...' : 'Salvar ajustes'}</button>}
                 />
 
                 <div className="flex flex-col gap-3">

@@ -3,8 +3,13 @@ import { X, Volume2, MoreHorizontal, Send, ChevronLeft, ChevronRight, BadgeCheck
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Avatar } from '../../components/ui/Avatar';
+import { socialService } from '../../services/socialService';
+import { profileService } from '../../services/profileService';
+import { useApiData } from '../../hooks/useApiData';
 
 interface Flash { nome: string; handle: string; grad: string; texto?: string }
+
+const GRADS = ['from-[#407BFF] to-violet-500', 'from-slate-600 to-slate-800', 'from-amber-200 to-emerald-200', 'from-sky-300 to-blue-500'];
 
 const FLASHS: Flash[] = [
     { nome: 'Dra. Maria Glenda', handle: '@dra.mariaglen', grad: 'from-[#407BFF] to-violet-500', texto: 'médico\nMÉDICO\nmedico' },
@@ -12,13 +17,37 @@ const FLASHS: Flash[] = [
     { nome: 'Dr. Marcos Toledo', handle: '@dr.marcos.toledo', grad: 'from-amber-200 to-emerald-200', texto: 'Olá\nBOM DIA' },
 ];
 
+interface RawStory { id?: number; autor_id?: number; texto?: string; legenda?: string }
+
+/** Stories reais (autor enriquecido) → flashs; cai no mock quando vazio. */
+async function fetchFlashs(): Promise<Flash[]> {
+    const raw = await socialService.stories.list<{ results: RawStory[] } | RawStory[]>();
+    const list = Array.isArray(raw) ? raw : raw?.results ?? [];
+    if (!list.length) return FLASHS;
+    const ids = [...new Set(list.map((s) => s.autor_id).filter(Boolean))] as number[];
+    const byId = new Map<number, { nome?: string; username?: string }>();
+    await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<{ nome?: string; username?: string }>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
+    return list.map((s, i) => {
+        const u = s.autor_id ? byId.get(s.autor_id) : undefined;
+        return {
+            nome: u?.nome || `Usuário ${s.autor_id ?? i + 1}`,
+            handle: u?.username ? `@${u.username}` : '@usuario',
+            grad: GRADS[i % GRADS.length],
+            texto: s.texto || s.legenda,
+        };
+    });
+}
+
 export function Flashs() {
     const navigate = useNavigate();
-    const [idx, setIdx] = useState(1);
-    const flash = FLASHS[idx];
-    const prev = FLASHS[(idx - 1 + FLASHS.length) % FLASHS.length];
-    const next = FLASHS[(idx + 1) % FLASHS.length];
-    const go = (d: number) => setIdx((i) => (i + d + FLASHS.length) % FLASHS.length);
+    const { data: FLASHS_DATA } = useApiData(fetchFlashs, FLASHS, []);
+    const [idx, setIdx] = useState(0);
+    const items = FLASHS_DATA.length ? FLASHS_DATA : FLASHS;
+    const cur = idx % items.length;
+    const flash = items[cur];
+    const prev = items[(cur - 1 + items.length) % items.length];
+    const next = items[(cur + 1) % items.length];
+    const go = (d: number) => setIdx((i) => (i + d + items.length) % items.length);
 
     return (
         <AppShell rightRail={null}>
@@ -41,9 +70,9 @@ export function Flashs() {
 
                     {/* Barras de progresso */}
                     <div className="absolute top-3 left-3 right-3 flex gap-1">
-                        {FLASHS.map((_, i) => (
+                        {items.map((_, i) => (
                             <span key={i} className="flex-1 h-0.5 rounded-full bg-white/40 overflow-hidden">
-                                <span className={`block h-full bg-white ${i < idx ? 'w-full' : i === idx ? 'w-1/2' : 'w-0'}`} />
+                                <span className={`block h-full bg-white ${i < cur ? 'w-full' : i === cur ? 'w-1/2' : 'w-0'}`} />
                             </span>
                         ))}
                     </div>
