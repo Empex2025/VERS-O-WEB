@@ -24,12 +24,12 @@ async function fetchCheckoutCards(): Promise<CardItem[]> {
 }
 
 const METHODS = [
-    { id: 'debito', label: 'Cartão de Débito', icon: CreditCard, hint: '' },
-    { id: 'credito', label: 'Cartão de Crédito', icon: CreditCard, hint: '' },
-    { id: 'pix', label: 'Pix', icon: QrCode, hint: 'Recomendado' },
-    { id: 'google', label: 'Google Pay', icon: Smartphone, hint: '' },
-    { id: 'apple', label: 'Apple Pay', icon: Smartphone, hint: '' },
-    { id: 'paypal', label: 'PayPal', icon: Wallet, hint: '' },
+    { id: 'debito', label: 'Cartão de Débito', icon: CreditCard, sub: '' },
+    { id: 'credito', label: 'Cartão de Crédito', icon: CreditCard, sub: 'Até 2x sem juros' },
+    { id: 'pix', label: 'Pix', icon: QrCode, sub: 'Aprovação Imediata' },
+    { id: 'google', label: 'Google Pay', icon: Smartphone, sub: '' },
+    { id: 'apple', label: 'Apple Pay', icon: Smartphone, sub: '' },
+    { id: 'paypal', label: 'PayPal', icon: Wallet, sub: '' },
 ];
 
 export function Pagamento() {
@@ -90,13 +90,15 @@ function MethodStep({ onPick }: { onPick: (id: string) => void }) {
     return (
         <div>
             <h2 className="text-base font-bold text-gray-900 mb-1">Como você deseja pagar?</h2>
-            <p className="text-xs text-gray-400 mb-4">Escolha a melhor forma de pagamento para concluir sua compra.</p>
+            <p className="text-xs text-gray-400 mb-4">Escolha o método de pagamento para confirmar sua consulta.</p>
             <div className="flex flex-col gap-2">
-                {METHODS.map(({ id, label, icon: Icon, hint }) => (
+                {METHODS.map(({ id, label, icon: Icon, sub }) => (
                     <button key={id} onClick={() => onPick(id)} className="flex items-center gap-3 bg-white border border-gray-200 rounded-xl px-4 py-3.5 hover:border-[#407BFF] transition-colors">
                         <Icon size={20} className="text-[#407BFF]" />
-                        <span className="text-sm font-semibold text-gray-800 flex-1 text-left">{label}</span>
-                        {hint && <span className="text-[10px] font-bold text-emerald-600 bg-emerald-50 px-2 py-0.5 rounded-full">{hint}</span>}
+                        <span className="flex-1 text-left">
+                            <span className="block text-sm font-semibold text-gray-800">{label}</span>
+                            {sub && <span className="block text-[11px] text-gray-400">{sub}</span>}
+                        </span>
                         <ChevronRight size={16} className="text-gray-300" />
                     </button>
                 ))}
