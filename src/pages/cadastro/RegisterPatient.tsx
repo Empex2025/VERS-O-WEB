@@ -1,10 +1,11 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, User, IdCard, Mail, Phone, KeyRound, Eye, EyeOff } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, IdCard, Mail, Phone, KeyRound, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { authService } from '../../services/authService';
+import { ApiError } from '../../services/http';
 import logoImage from '../../assets/login/logo-login.png';
 import illustrationImage from '../../assets/login/cad-cadastro.png';
 
@@ -22,6 +23,8 @@ type PatientFormInputs = z.infer<typeof patientSchema>;
 export function RegisterPatient() {
     const navigate = useNavigate();
     const [showPassword, setShowPassword] = useState(false);
+    const [apiError, setApiError] = useState<string | null>(null);
+    const [submitting, setSubmitting] = useState(false);
     const {
         register,
         handleSubmit,
@@ -32,6 +35,9 @@ export function RegisterPatient() {
     });
 
     const onSubmit = async (data: PatientFormInputs) => {
+        setApiError(null);
+        setSubmitting(true);
+        let proceed = false;
         try {
             await authService.register({
                 nome: data.fullName,
@@ -41,11 +47,28 @@ export function RegisterPatient() {
                 telefone: data.phone,
                 cpfcnpj: data.cpf,
             });
-            // Backend criou a conta no Firebase (emailVerified=false); dispara o link de ativação.
+            proceed = true;
+        } catch (err) {
+            // Conta já existe: segue para reenviar o link de ativação; outros erros ficam visíveis.
+            if (err instanceof ApiError && /cadastrad|já|already|exists/i.test(err.message)) {
+                proceed = true;
+            } else if (err instanceof ApiError) {
+                setApiError(err.message);
+            } else {
+                setApiError('Não foi possível conectar ao servidor. Tente novamente em instantes.');
+            }
+        }
+        if (!proceed) {
+            setSubmitting(false);
+            return;
+        }
+        // Backend criou a conta no Firebase (emailVerified=false); dispara o link de ativação.
+        try {
             await authService.sendActivationEmail(data.email, data.password);
         } catch {
-            // API fora do ar / e-mail já usado / Firebase indisponível: segue e deixa reenviar na próxima tela
+            // Firebase indisponível/senha divergente: dá pra reenviar na próxima tela
         }
+        setSubmitting(false);
         navigate('/cadastro/verificar-email', { state: { email: data.email, password: data.password } });
     };
 
@@ -174,16 +197,22 @@ export function RegisterPatient() {
                                 <a href="#" className="font-bold underline text-gray-600 hover:text-gray-900">Termos de Uso</a> e <a href="#" className="font-bold underline text-gray-600 hover:text-gray-900">Política de Privacidade.</a>
                             </p>
 
+                            {apiError && (
+                                <div className="flex items-center gap-2 text-rose-500 text-sm font-semibold">
+                                    <AlertCircle size={15} /> {apiError}
+                                </div>
+                            )}
+
                             <button
                                 type="submit"
-                                disabled={!isValid}
-                                className={`w-full flex items-center justify-center gap-2 font-bold py-4 rounded-full transition-all group ${isValid
+                                disabled={!isValid || submitting}
+                                className={`w-full flex items-center justify-center gap-2 font-bold py-4 rounded-full transition-all group ${isValid && !submitting
                                     ? 'bg-[#407BFF] hover:bg-blue-600 active:bg-blue-700 text-white shadow-lg shadow-blue-500/20 cursor-pointer'
                                     : 'bg-[#E5E7EB] text-gray-400 cursor-not-allowed'
                                     }`}
                             >
-                                Continuar
-                                <ArrowRight size={18} className={`transition-transform ${isValid ? 'opacity-100 group-hover:translate-x-1' : 'opacity-70'}`} />
+                                {submitting ? 'Enviando…' : 'Continuar'}
+                                <ArrowRight size={18} className={`transition-transform ${isValid && !submitting ? 'opacity-100 group-hover:translate-x-1' : 'opacity-70'}`} />
                             </button>
                         </div>
 
