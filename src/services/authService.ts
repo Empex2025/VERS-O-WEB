@@ -1,6 +1,4 @@
-import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { api } from './http';
-import { firebaseAuth } from './firebase';
 import { useAuthStore, type AuthUser } from '../store/useAuthStore';
 
 interface LoginResponse {
@@ -38,13 +36,12 @@ export const authService = {
     },
 
     /**
-     * Dispara o e-mail de ativação via Firebase. O backend já criou o usuário no
-     * Firebase (emailVerified=false) com esta mesma senha, então autenticamos no
-     * cliente e pedimos ao Firebase para enviar o link de verificação por e-mail.
+     * Dispara o e-mail de confirmação de conta (Resend, via backend). O backend
+     * marca `is_verificado` no SQL quando o usuário abre o link do e-mail
+     * (`GET /users/confirm-email?token=`). O login só passa após a confirmação.
      */
-    async sendActivationEmail(email: string, password: string) {
-        const cred = await signInWithEmailAndPassword(firebaseAuth, email, password);
-        await sendEmailVerification(cred.user);
+    sendConfirmationEmail(email: string) {
+        return api('/api/user-api/users/send-confirmation', { method: 'POST', auth: false, body: { email } });
     },
 
     sendResetCode(email: string) {

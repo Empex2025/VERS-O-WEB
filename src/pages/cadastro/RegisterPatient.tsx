@@ -89,14 +89,14 @@ export function RegisterPatient() {
             setSubmitting(false);
             return;
         }
-        // Backend criou a conta no Firebase (emailVerified=false); dispara o link de ativação.
+        // Dispara o e-mail de confirmação (Resend, via backend).
         try {
-            await authService.sendActivationEmail(data.email, data.password);
+            await authService.sendConfirmationEmail(data.email);
         } catch {
-            // Firebase indisponível/senha divergente: dá pra reenviar na próxima tela
+            // Backend/Resend indisponível: dá pra reenviar na próxima tela
         }
         setSubmitting(false);
-        navigate('/cadastro/verificar-email', { state: { email: data.email, password: data.password } });
+        navigate('/cadastro/verificar-email', { state: { email: data.email } });
     };
 
     return (

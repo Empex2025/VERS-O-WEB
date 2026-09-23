@@ -11,18 +11,17 @@ export function VerifyEmail() {
     const location = useLocation();
     const navigate = useNavigate();
     const email: string = location.state?.email || 'seu e-mail';
-    const password: string | undefined = location.state?.password;
 
     const [status, setStatus] = useState<Status>('idle');
 
     const handleResend = async () => {
-        if (!password) {
+        if (!location.state?.email) {
             setStatus('error');
             return;
         }
         setStatus('sending');
         try {
-            await authService.sendActivationEmail(email, password);
+            await authService.sendConfirmationEmail(email);
             setStatus('sent');
         } catch {
             setStatus('error');
