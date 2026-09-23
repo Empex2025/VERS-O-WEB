@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { ArrowLeft, ArrowRight, User, IdCard, Mail, Phone, KeyRound, Eye, EyeOff, AlertCircle } from 'lucide-react';
+import { ArrowLeft, ArrowRight, User, AtSign, Calendar, IdCard, Mail, Phone, KeyRound, Eye, EyeOff, AlertCircle } from 'lucide-react';
 import { Link, useNavigate } from 'react-router-dom';
 import { useForm } from 'react-hook-form';
 import { z } from 'zod';
@@ -9,10 +9,35 @@ import { ApiError } from '../../services/http';
 import logoImage from '../../assets/login/logo-login.png';
 import illustrationImage from '../../assets/login/cad-cadastro.png';
 
+/** Validação de CPF (dígitos verificadores) — casa com a exigência do backend. */
+function isValidCpf(value: string): boolean {
+    const cpf = value.replace(/\D/g, '');
+    if (cpf.length !== 11 || /^(\d)\1{10}$/.test(cpf)) return false;
+    const calc = (len: number) => {
+        let sum = 0;
+        for (let i = 0; i < len; i++) sum += parseInt(cpf[i]) * (len + 1 - i);
+        const d = (sum * 10) % 11;
+        return d === 10 ? 0 : d;
+    };
+    return calc(9) === parseInt(cpf[9]) && calc(10) === parseInt(cpf[10]);
+}
+
+/** Idade mínima de 18 anos (o backend rejeita menores). */
+function isAdult(dateStr: string): boolean {
+    if (!dateStr) return false;
+    const d = new Date(dateStr);
+    if (isNaN(d.getTime())) return false;
+    const now = new Date();
+    const age = now.getFullYear() - d.getFullYear() - (now < new Date(now.getFullYear(), d.getMonth(), d.getDate()) ? 1 : 0);
+    return age >= 18;
+}
+
 // 1. Schema de validação dos dados pessoais
 const patientSchema = z.object({
     fullName: z.string().min(3, 'Nome precisa ter no mínimo 3 letras'),
-    cpf: z.string().min(11, 'CPF incompleto'),
+    username: z.string().regex(/^[a-z0-9._]{3,30}$/, 'Use 3 a 30: letras minúsculas, números, ponto ou _'),
+    cpf: z.string().refine(isValidCpf, 'CPF inválido'),
+    birthDate: z.string().refine(isAdult, 'É necessário ter pelo menos 18 anos'),
     email: z.string().email('Email inválido'),
     phone: z.string().min(10, 'Telefone incompleto'),
     password: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres'),
@@ -28,7 +53,7 @@ export function RegisterPatient() {
     const {
         register,
         handleSubmit,
-        formState: { isValid },
+        formState: { isValid, errors },
     } = useForm<PatientFormInputs>({
         resolver: zodResolver(patientSchema),
         mode: 'onChange', // Valida a cada tecla digitada para ligar o botão em tempo real
@@ -41,11 +66,13 @@ export function RegisterPatient() {
         try {
             await authService.register({
                 nome: data.fullName,
+                username: data.username,
                 email: data.email,
                 senha_hash: data.password,
                 tipo_usuario: 'paciente',
-                telefone: data.phone,
-                cpfcnpj: data.cpf,
+                telefone: data.phone.replace(/\D/g, ''), // só dígitos (coluna do banco é curta)
+                cpfcnpj: data.cpf.replace(/\D/g, ''),
+                dt_nascimento: data.birthDate, // YYYY-MM-DD (exigido pelo backend p/ paciente)
             });
             proceed = true;
         } catch (err) {
@@ -118,6 +145,24 @@ export function RegisterPatient() {
                             </div>
                         </div>
 
+                        {/* Nome de usuário */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-bold text-gray-800">Nome de usuário</label>
+                            <div className="relative flex items-center bg-[#F3F4F6] rounded-xl overflow-hidden border border-transparent focus-within:border-[#407BFF] focus-within:ring-2 focus-within:ring-[#407BFF]/20 transition-all">
+                                <div className="absolute left-4 text-gray-400">
+                                    <AtSign size={18} />
+                                </div>
+                                <input
+                                    {...register('username')}
+                                    type="text"
+                                    autoCapitalize="none"
+                                    placeholder="carlos.magno"
+                                    className="w-full bg-transparent border-none py-3.5 pl-12 pr-4 text-sm text-gray-700 outline-none placeholder-gray-400"
+                                />
+                            </div>
+                            {errors.username && <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.username.message}</p>}
+                        </div>
+
                         {/* CPF do Responsável */}
                         <div className="flex flex-col gap-2">
                             <label className="text-sm font-bold text-gray-800">CPF do Responsável</label>
@@ -128,11 +173,30 @@ export function RegisterPatient() {
                                 <input
                                     {...register('cpf')}
                                     type="text"
+                                    inputMode="numeric"
                                     placeholder="000.000.000-00"
                                     className="w-full bg-transparent border-none py-3.5 pl-12 pr-4 text-sm text-gray-700 outline-none placeholder-gray-400"
                                 />
                             </div>
-                            <a href="#" className="text-xs text-gray-400 underline hover:text-gray-600 self-start mt-1">Por que pedimos seu CPF?</a>
+                            {errors.cpf
+                                ? <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.cpf.message}</p>
+                                : <a href="#" className="text-xs text-gray-400 underline hover:text-gray-600 self-start mt-1">Por que pedimos seu CPF?</a>}
+                        </div>
+
+                        {/* Data de Nascimento */}
+                        <div className="flex flex-col gap-2">
+                            <label className="text-sm font-bold text-gray-800">Data de Nascimento</label>
+                            <div className="relative flex items-center bg-[#F3F4F6] rounded-xl overflow-hidden border border-transparent focus-within:border-[#407BFF] focus-within:ring-2 focus-within:ring-[#407BFF]/20 transition-all">
+                                <div className="absolute left-4 text-gray-400">
+                                    <Calendar size={18} />
+                                </div>
+                                <input
+                                    {...register('birthDate')}
+                                    type="date"
+                                    className="w-full bg-transparent border-none py-3.5 pl-12 pr-4 text-sm text-gray-700 outline-none placeholder-gray-400"
+                                />
+                            </div>
+                            {errors.birthDate && <p className="text-xs text-rose-500 flex items-center gap-1"><AlertCircle size={12} /> {errors.birthDate.message}</p>}
                         </div>
 
                         {/* Email */}

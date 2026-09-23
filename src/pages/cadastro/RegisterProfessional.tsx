@@ -45,8 +45,8 @@ export function RegisterProfessional() {
                 email: data.email,
                 senha_hash: data.password,
                 tipo_usuario: 'profissional',
-                telefone: data.phone,
-                cpfcnpj: data.cpf,
+                telefone: data.phone.replace(/\D/g, ''), // só dígitos (coluna do banco é curta)
+                cpfcnpj: data.cpf.replace(/\D/g, ''),
             });
             proceed = true;
         } catch (err) {
