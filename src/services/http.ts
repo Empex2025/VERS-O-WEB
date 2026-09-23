@@ -1,8 +1,24 @@
 import { useAuthStore } from '../store/useAuthStore';
 
-/** URL base do gateway BBF. Configurável por VITE_API_URL (ex.: IIS :8191). */
-export const API_URL =
-    (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, '') || 'http://localhost:3000';
+/** BBF de produção (Railway). Usado como base e como rede de segurança em produção. */
+const PROD_API_URL = 'https://isaude-api-production.up.railway.app';
+
+/**
+ * URL base do gateway BBF. Configurável por VITE_API_URL (ex.: IIS :8191).
+ * Rede de segurança: se o build vier com uma URL de localhost (env mal configurada
+ * na hospedagem) mas o site estiver rodando num domínio real, força a Railway —
+ * um site publicado nunca deve falar com localhost.
+ */
+function resolveApiUrl(): string {
+    const configured = (import.meta.env.VITE_API_URL as string | undefined)?.replace(/\/+$/, '');
+    const isBrowser = typeof window !== 'undefined';
+    const onLocalhost = isBrowser && /^(localhost|127\.0\.0\.1|\[::1\])$/.test(window.location.hostname);
+    if (!configured) return onLocalhost || !isBrowser ? 'http://localhost:3000' : PROD_API_URL;
+    if (isBrowser && !onLocalhost && /localhost|127\.0\.0\.1/.test(configured)) return PROD_API_URL;
+    return configured;
+}
+
+export const API_URL = resolveApiUrl();
 
 export class ApiError extends Error {
     status: number;
