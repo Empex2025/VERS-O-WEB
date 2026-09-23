@@ -5,7 +5,7 @@ import { Home } from './pages/home/Home';
 import { Register } from './pages/cadastro/Register';
 import { RegisterPatient } from './pages/cadastro/RegisterPatient';
 import { RegisterProfessional } from './pages/cadastro/RegisterProfessional';
-import { PhoneVerification } from './pages/cadastro/PhoneVerification';
+import { VerifyEmail } from './pages/cadastro/VerifyEmail';
 import { ForgotPassword } from './pages/recuperar-senha/ForgotPassword';
 import { NoPhoneAccess } from './pages/recuperar-senha/NoPhoneAccess';
 import { ForgotPasswordCode } from './pages/recuperar-senha/ForgotPasswordCode';
@@ -152,7 +152,7 @@ function App() {
         <Route path="/cadastro" element={<Register />} />
         <Route path="/cadastro/paciente" element={<RegisterPatient />} />
         <Route path="/cadastro/profissional" element={<RegisterProfessional />} />
-        <Route path="/cadastro/telefone" element={<PhoneVerification />} />
+        <Route path="/cadastro/verificar-email" element={<VerifyEmail />} />
         <Route path="/recuperar-senha" element={<ForgotPassword />} />
         <Route path="/recuperar-senha/sem-acesso" element={<NoPhoneAccess />} />
         <Route path="/recuperar-senha/codigo" element={<ForgotPasswordCode />} />

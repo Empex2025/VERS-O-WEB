@@ -42,10 +42,12 @@ export function RegisterProfessional() {
                 telefone: data.phone,
                 cpfcnpj: data.cpf,
             });
+            // Backend criou a conta no Firebase (emailVerified=false); dispara o link de ativação.
+            await authService.sendActivationEmail(data.email, data.password);
         } catch {
-            // API fora do ar / e-mail já usado: segue o fluxo em modo demo
+            // API fora do ar / e-mail já usado / Firebase indisponível: segue e deixa reenviar na próxima tela
         }
-        navigate('/cadastro/telefone', { state: { phone: data.phone } });
+        navigate('/cadastro/verificar-email', { state: { email: data.email, password: data.password } });
     };
 
     return (

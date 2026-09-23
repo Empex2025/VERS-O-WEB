@@ -1,4 +1,6 @@
+import { signInWithEmailAndPassword, sendEmailVerification } from 'firebase/auth';
 import { api } from './http';
+import { firebaseAuth } from './firebase';
 import { useAuthStore, type AuthUser } from '../store/useAuthStore';
 
 interface LoginResponse {
@@ -33,6 +35,16 @@ export const authService = {
 
     register(payload: RegisterPayload) {
         return api('/api/user-api/users', { method: 'POST', auth: false, body: payload });
+    },
+
+    /**
+     * Dispara o e-mail de ativação via Firebase. O backend já criou o usuário no
+     * Firebase (emailVerified=false) com esta mesma senha, então autenticamos no
+     * cliente e pedimos ao Firebase para enviar o link de verificação por e-mail.
+     */
+    async sendActivationEmail(email: string, password: string) {
+        const cred = await signInWithEmailAndPassword(firebaseAuth, email, password);
+        await sendEmailVerification(cred.user);
     },
 
     sendResetCode(email: string) {
