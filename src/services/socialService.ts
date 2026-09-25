@@ -69,6 +69,8 @@ export const socialService = {
     salvamentos: makeCrud(P, 'salvamento'),
     seguidores: makeCrud(P, 'seguidor'),
     stories: makeCrud(P, 'story'),
+    /** Marca um story como visto (`POST /story/:id/view`). */
+    viewStory: (id: number | string) => api(`${P}/story/${id}/view`, { method: 'POST', body: {} }),
     profissionalDetalhes: makeCrud(P, 'profissional-detalhes'),
     anuncios: makeCrud(P, 'anuncio'),
 

@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { X, Volume2, MoreHorizontal, Send, ChevronLeft, ChevronRight, BadgeCheck } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
@@ -7,7 +7,7 @@ import { socialService } from '../../services/socialService';
 import { profileService } from '../../services/profileService';
 import { useApiData } from '../../hooks/useApiData';
 
-interface Flash { nome: string; handle: string; grad: string; texto?: string }
+interface Flash { id?: number; nome: string; handle: string; grad: string; texto?: string }
 
 const GRADS = ['from-[#407BFF] to-violet-500', 'from-slate-600 to-slate-800', 'from-amber-200 to-emerald-200', 'from-sky-300 to-blue-500'];
 
@@ -30,6 +30,7 @@ async function fetchFlashs(): Promise<Flash[]> {
     return list.map((s, i) => {
         const u = s.autor_id ? byId.get(s.autor_id) : undefined;
         return {
+            id: s.id,
             nome: u?.nome || `Usuário ${s.autor_id ?? i + 1}`,
             handle: u?.username ? `@${u.username}` : '@usuario',
             grad: GRADS[i % GRADS.length],
@@ -48,6 +49,15 @@ export function Flashs() {
     const prev = items[(cur - 1 + items.length) % items.length];
     const next = items[(cur + 1) % items.length];
     const go = (d: number) => setIdx((i) => (i + d + items.length) % items.length);
+
+    // Registra a visualização do story ativo uma única vez por id (só stories reais).
+    const viewedRef = useRef<Set<number>>(new Set());
+    useEffect(() => {
+        const id = flash?.id;
+        if (id == null || viewedRef.current.has(id)) return;
+        viewedRef.current.add(id);
+        socialService.viewStory(id).catch(() => { /* view é best-effort */ });
+    }, [flash?.id]);
 
     return (
         <AppShell rightRail={null}>
