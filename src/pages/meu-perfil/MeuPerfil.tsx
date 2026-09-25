@@ -6,7 +6,6 @@ import { Avatar } from '../../components/ui/Avatar';
 import { PostCard } from '../../components/social/PostCard';
 import { useAuthStore } from '../../store/useAuthStore';
 import { socialService, toPost, type RawPost } from '../../services/socialService';
-import { feedPosts } from '../../data/social';
 import { useApiData } from '../../hooks/useApiData';
 import { compactNumber } from '../../lib/format';
 
@@ -51,7 +50,7 @@ export function MeuPerfil() {
         bio: user?.descricao_bio || 'Clínica geral com 15 anos de experiência formada pela UNIFESP. Minha abordagem une medicina baseada em evidências ao cuidado humano.',
         stats: { posts: compactNumber(mine.posts.length || 3), followers: compactNumber(mine.followers || 4785), following: compactNumber(mine.following || 483) },
     };
-    const posts = mine.posts.length ? mine.posts.map((p) => toPost(p, { nome: me.name })) : feedPosts;
+    const posts = mine.posts.map((p) => toPost(p, { nome: me.name }));
 
     return (
         <AppShell rightRail={null}>

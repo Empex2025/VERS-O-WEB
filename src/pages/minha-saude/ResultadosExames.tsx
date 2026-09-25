@@ -3,7 +3,7 @@ import { Search, Plus, ChevronDown, X, FileText, BadgeCheck } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { exams, type Exam } from '../../data/health';
+import { type Exam } from '../../data/health';
 import { teleconsultaService } from '../../services/teleconsultaService';
 import { useApiData } from '../../hooks/useApiData';
 
@@ -32,7 +32,7 @@ async function fetchExames(): Promise<Exam[]> {
 export function ResultadosExames() {
     const navigate = useNavigate();
     const [showUpload, setShowUpload] = useState(false);
-    const { data: examsData } = useApiData(fetchExames, exams, []);
+    const { data: examsData } = useApiData(fetchExames, [], []);
 
     return (
         <AppShell>
@@ -62,6 +62,9 @@ export function ResultadosExames() {
 
                 {/* Lista */}
                 <div className="flex flex-col gap-3">
+                    {examsData.length === 0 && (
+                        <p className="text-sm text-gray-400 text-center py-10">Nenhum resultado de exame disponível.</p>
+                    )}
                     {examsData.map((e) => (
                         <button
                             key={e.id}

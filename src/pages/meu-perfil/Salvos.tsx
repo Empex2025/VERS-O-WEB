@@ -4,7 +4,6 @@ import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { PostCard } from '../../components/social/PostCard';
 import { Avatar } from '../../components/ui/Avatar';
-import { feedPosts } from '../../data/social';
 import type { Post } from '../../data/social';
 import { socialService, toPost, type RawPost, type RawUser } from '../../services/socialService';
 import { profileService } from '../../services/profileService';
@@ -27,7 +26,7 @@ async function fetchSaved(): Promise<Post[]> {
 
 export function Salvos() {
     const [tab, setTab] = useState<(typeof TABS)[number]>('Publicações');
-    const { data: saved } = useApiData(fetchSaved, feedPosts, []);
+    const { data: saved } = useApiData(fetchSaved, [], []);
 
     return (
         <AppShell rightRail={null}>

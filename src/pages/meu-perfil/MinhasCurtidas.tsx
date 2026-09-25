@@ -3,7 +3,7 @@ import { MoreHorizontal, ImageIcon } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { PostCard } from '../../components/social/PostCard';
-import { feedPosts, type Post } from '../../data/social';
+import { type Post } from '../../data/social';
 import { socialService, toPost, type RawPost, type RawUser } from '../../services/socialService';
 import { profileService } from '../../services/profileService';
 import { useApiData } from '../../hooks/useApiData';
@@ -17,7 +17,7 @@ async function fetchCurtidas(): Promise<Post[]> {
     const raw = await socialService.curtidas.list<{ results: RawCurtida[] } | RawCurtida[]>();
     const list = Array.isArray(raw) ? raw : raw?.results ?? [];
     const posts = list.map((c) => c.postagem).filter(Boolean) as RawPost[];
-    if (!posts.length) return feedPosts;
+    if (!posts.length) return [];
     const ids = [...new Set(posts.map((p) => p.autor_id).filter(Boolean))];
     const byId = new Map<number, RawUser>();
     await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<RawUser>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
@@ -26,7 +26,7 @@ async function fetchCurtidas(): Promise<Post[]> {
 
 export function MinhasCurtidas() {
     const [tab, setTab] = useState<(typeof TABS)[number]>('Publicações');
-    const { data: posts } = useApiData(fetchCurtidas, feedPosts, []);
+    const { data: posts } = useApiData(fetchCurtidas, [], []);
 
     return (
         <AppShell rightRail={null}>

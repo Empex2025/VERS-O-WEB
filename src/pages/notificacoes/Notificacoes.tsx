@@ -4,7 +4,6 @@ import { AppShell } from '../../components/layout/AppShell';
 import { FlashsRow } from '../../components/social/FlashsRow';
 import { PostCard } from '../../components/social/PostCard';
 import { Avatar } from '../../components/ui/Avatar';
-import { feedPosts } from '../../data/social';
 import { socialService } from '../../services/socialService';
 import { useApiData } from '../../hooks/useApiData';
 import { timeAgo } from '../../lib/format';
@@ -73,6 +72,7 @@ async function fetchNotifs(): Promise<{ today: Notif[]; last7: Notif[] }> {
 export function Notificacoes() {
     const [tab, setTab] = useState<(typeof TABS)[number]>('Principal');
     const { data: notifs } = useApiData(fetchNotifs, { today: TODAY, last7: LAST_7 }, []);
+    const { data: feed } = useApiData(() => socialService.getFeed({ limit: 1 }), [], []);
 
     return (
         <AppShell rightRail={null}>
@@ -106,7 +106,7 @@ export function Notificacoes() {
                 {/* Painel de conteúdo */}
                 <div className="hidden xl:flex flex-1 flex-col gap-4 max-w-xl">
                     <FlashsRow />
-                    <PostCard post={feedPosts[0]} />
+                    {feed[0] && <PostCard post={feed[0]} />}
                 </div>
             </div>
 

@@ -3,7 +3,6 @@ import { Search, Send, Phone, Video, MoreHorizontal } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
 import { JitsiRoom } from '../../components/video/JitsiRoom';
 import { Avatar } from '../../components/ui/Avatar';
-import { suggestions } from '../../data/social';
 import { socialService } from '../../services/socialService';
 import { profileService } from '../../services/profileService';
 import { useAuthStore } from '../../store/useAuthStore';
@@ -14,22 +13,6 @@ interface RawConversa { contato_id: number; ultima_mensagem: string; dt_envio: s
 interface RawMensagem { id: number; remetente_id: number; destinatario_id: number; mensagem: string; dt_envio: string }
 interface RawUser { nome?: string }
 interface ChatItem { contatoId: number; name: string; last: string; time: string; unread: number }
-
-/** Fallback mock — mantém a tela navegável quando a API está fora ("modo demo"). */
-const CHATS_FALLBACK: ChatItem[] = suggestions.map((p, i) => ({
-    contatoId: -(i + 1),
-    name: p.name,
-    last: ['Podemos remarcar para amanhã?', 'Obrigada, doutor! 🙏', 'Vou te enviar o exame agora.', 'Perfeito, até lá!', 'Bom dia! Tudo bem?'][i] || '',
-    time: ['09:12', 'Ontem', 'Ter', 'Seg', '12/08'][i] || '',
-    unread: i === 0 ? 2 : 0,
-}));
-
-const MESSAGES_FALLBACK = [
-    { me: false, text: 'Bom dia, doutora! Gostaria de remarcar minha consulta.' },
-    { me: true, text: 'Bom dia! Claro, temos horário amanhã às 14h.' },
-    { me: false, text: 'Podemos remarcar para amanhã?' },
-    { me: true, text: 'Sim, confirmado para amanhã às 14h. 😊' },
-];
 
 /** Lista de conversas + enriquecimento do nome do contato. */
 async function fetchChats(): Promise<ChatItem[]> {
@@ -49,12 +32,12 @@ async function fetchChats(): Promise<ChatItem[]> {
 
 export function Conversas() {
     const selfId = useAuthStore((s) => s.user?.id) ?? 0;
-    const { data: chats } = useApiData(fetchChats, CHATS_FALLBACK, []);
+    const { data: chats } = useApiData(fetchChats, [], []);
     const [active, setActive] = useState(0);
     const [inCall, setInCall] = useState(false);
     const [callAudio, setCallAudio] = useState(false);
     const meName = useAuthStore((s) => s.user?.nome);
-    const [messages, setMessages] = useState<{ me: boolean; text: string }[]>(MESSAGES_FALLBACK);
+    const [messages, setMessages] = useState<{ me: boolean; text: string }[]>([]);
     const [draft, setDraft] = useState('');
     const [sending, setSending] = useState(false);
     const chat = chats[active];
@@ -63,7 +46,7 @@ export function Conversas() {
     // Carrega o histórico real ao trocar de conversa (conversa mock mantém o fallback).
     useEffect(() => {
         let alive = true;
-        if (!chat || chat.contatoId < 0 || !selfId) { setMessages(MESSAGES_FALLBACK); return; }
+        if (!chat || chat.contatoId < 0 || !selfId) { setMessages([]); return; }
         (async () => {
             try {
                 const raw = await socialService.conversas.historico<RawMensagem[]>({ usuario_id: selfId, contato_id: chat.contatoId });

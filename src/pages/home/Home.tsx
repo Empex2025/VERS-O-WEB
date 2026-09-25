@@ -5,7 +5,6 @@ import { FlashsRow } from '../../components/social/FlashsRow';
 import { PostCard } from '../../components/social/PostCard';
 import { Avatar } from '../../components/ui/Avatar';
 import { Link } from 'react-router-dom';
-import { feedPosts } from '../../data/social';
 import { socialService } from '../../services/socialService';
 import { useApiData } from '../../hooks/useApiData';
 import { useSuggestions } from '../../hooks/useSuggestions';
@@ -20,7 +19,7 @@ export function Home() {
     const [tab, setTab] = useState<'feed' | 'pulses'>('feed');
 
     // Feed real da API (fallback para o mock quando a API está fora do ar)
-    const { data: posts } = useApiData(() => socialService.getFeed({ limit: 30 }), feedPosts, []);
+    const { data: posts } = useApiData(() => socialService.getFeed({ limit: 30 }), [], []);
 
     const finishOnboarding = () => {
         localStorage.setItem(ONBOARDED_KEY, '1');
@@ -53,6 +52,9 @@ export function Home() {
                 </div>
 
                 {/* Feed */}
+                {posts.length === 0 && (
+                    <p className="text-sm text-gray-400 text-center py-10">Seu feed está vazio. Siga pessoas para ver publicações aqui.</p>
+                )}
                 {posts.map((post) => (
                     <PostCard key={post.id} post={post} />
                 ))}

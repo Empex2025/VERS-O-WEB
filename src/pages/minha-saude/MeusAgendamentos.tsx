@@ -3,7 +3,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
-import { appointments, type Appointment } from '../../data/health';
+import { type Appointment } from '../../data/health';
 import { teleconsultaService } from '../../services/teleconsultaService';
 import { profileService } from '../../services/profileService';
 import { useApiData } from '../../hooks/useApiData';
@@ -51,13 +51,16 @@ async function fetchAgendamentos(): Promise<Appointment[]> {
 
 export function MeusAgendamentos() {
     const navigate = useNavigate();
-    const { data: appointmentsData } = useApiData(fetchAgendamentos, appointments, []);
+    const { data: appointmentsData } = useApiData(fetchAgendamentos, [], []);
     return (
         <AppShell>
             <div className="max-w-2xl mx-auto">
                 <PageHeader title="Meus Agendamentos" to="/minha-saude" />
 
                 <div className="flex flex-col gap-3">
+                    {appointmentsData.length === 0 && (
+                        <p className="text-sm text-gray-400 text-center py-10">Você não tem agendamentos.</p>
+                    )}
                     {appointmentsData.map((a, i) => {
                         const isExame = /exame|raio|hemograma/i.test(a.type);
                         return (

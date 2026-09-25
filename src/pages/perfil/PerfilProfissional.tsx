@@ -7,29 +7,24 @@ import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 import { SchedulePicker } from '../../components/health/SchedulePicker';
-import { professional as pro } from '../../data/health';
 import { useNavigate, useParams } from 'react-router-dom';
 import { teleconsultaService } from '../../services/teleconsultaService';
 import { profileService } from '../../services/profileService';
 import { useApiData } from '../../hooks/useApiData';
 import { useAuthStore } from '../../store/useAuthStore';
 
-const REVIEWS_FALLBACK = [
-    { name: 'Roberto', stars: 5, text: 'Excelente atendimento, muito atenciosa e didática.' },
-    { name: 'Amanda', stars: 5, text: 'Resolveu meu problema rapidamente. Recomendo!' },
-    { name: 'Ariana', stars: 4, text: 'Ótima médica, só demorou um pouco para começar.' },
-];
-
+interface Review { name: string; stars: number; text: string }
 interface ProfDisplay {
     name: string; handle: string; bio: string; crm: string; ratingAverage: number;
     stats: { followers: string; posts: string; ratings: string };
     services: { label: string; desc: string; price: string }[];
-    reviews: { name: string; stars: number; text: string }[];
+    reviews: Review[];
 }
 
-const PROF_FALLBACK: ProfDisplay = {
-    name: pro.name, handle: pro.handle, bio: pro.bio, crm: pro.crm,
-    ratingAverage: pro.ratingAverage, stats: pro.stats, services: pro.services, reviews: REVIEWS_FALLBACK,
+/** Placeholder neutro enquanto carrega / quando o profissional não é encontrado (sem mock). */
+const PROF_EMPTY: ProfDisplay = {
+    name: 'Profissional', handle: '@profissional', bio: '', crm: '', ratingAverage: 0,
+    stats: { followers: '0', posts: '0', ratings: '0' }, services: [], reviews: [],
 };
 
 /** Carrega o profissional real (`:id`) de teleconsulta + user, com fallback ao mock. */
@@ -44,7 +39,7 @@ async function fetchProf(id?: string): Promise<ProfDisplay> {
     const user = userRes;
     if (!prof && !user) throw new Error('não encontrado');
 
-    let reviews = REVIEWS_FALLBACK;
+    let reviews: Review[] = [];
     try {
         const av = await teleconsultaService.avaliacoes.list<{ results?: any[] } | any[]>({ profissional_id: id });
         const avl = Array.isArray(av) ? av : av?.results ?? [];
@@ -52,15 +47,16 @@ async function fetchProf(id?: string): Promise<ProfDisplay> {
     } catch { /* usa fallback */ }
 
     const especialidade = prof?.especialidade || 'Profissional de saúde';
-    const preco = prof?.preco != null ? `R$ ${prof.preco}` : (pro.services[0]?.price ?? '');
+    const preco = prof?.preco != null ? `R$ ${prof.preco}` : '';
     const modalidades = (prof?.modalidades || prof?.tipos || []).join(' · ') || 'Atendimento';
+    const media = reviews.length ? Number((reviews.reduce((s, r) => s + r.stars, 0) / reviews.length).toFixed(1)) : 0;
     return {
-        name: prof?.nome || user?.nome || pro.name,
-        handle: user?.username ? `@${user.username}` : pro.handle,
+        name: prof?.nome || user?.nome || 'Profissional',
+        handle: user?.username ? `@${user.username}` : '@profissional',
         bio: user?.descricao_bio || especialidade,
         crm: especialidade,
-        ratingAverage: pro.ratingAverage,
-        stats: pro.stats,
+        ratingAverage: media,
+        stats: { followers: '0', posts: '0', ratings: String(reviews.length) },
         services: [{ label: especialidade, desc: modalidades, price: preco }],
         reviews,
     };
@@ -71,7 +67,7 @@ export function PerfilProfissional() {
     const { id } = useParams();
     const selfId = useAuthStore((s) => s.user?.id) ?? 0;
     const [picking, setPicking] = useState(false);
-    const { data: dp } = useApiData(() => fetchProf(id), PROF_FALLBACK, [id]);
+    const { data: dp } = useApiData(() => fetchProf(id), PROF_EMPTY, [id]);
 
     // Cria o agendamento de verdade e segue para o pagamento.
     const agendar = async (day: number, time: string) => {
