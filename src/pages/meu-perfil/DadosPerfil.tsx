@@ -9,11 +9,11 @@ export function DadosPerfil() {
     const user = useAuthStore((s) => s.user) as any;
     const token = useAuthStore((s) => s.token);
     const setAuth = useAuthStore((s) => s.setAuth);
-    const [tel, setTel] = useState(user?.telefone || '(00) 94002-8922');
-    const [email, setEmail] = useState(user?.email || 'carlos.magno@email.com');
-    const [cpf, setCpf] = useState(user?.cpf || '132.456.789-01');
-    const [nome, setNome] = useState(user?.nome || 'Carlos Magno de Souza');
-    const [nasc, setNasc] = useState(user?.data_nascimento || '01/01/2000');
+    const [tel, setTel] = useState(user?.telefone || '');
+    const [email, setEmail] = useState(user?.email || '');
+    const [cpf, setCpf] = useState(user?.cpf || '');
+    const [nome, setNome] = useState(user?.nome || '');
+    const [nasc, setNasc] = useState(user?.data_nascimento || '');
     const [saving, setSaving] = useState(false);
 
     const salvar = async () => {

@@ -1,14 +1,20 @@
 import { useState } from 'react';
 import {
     MessageCircle, ChevronDown, Maximize2, Search, ChevronLeft,
-    BadgeCheck, Paperclip, Send, PhoneIncoming, PhoneOff, MessageSquareText,
+    BadgeCheck, Paperclip, Send, MessageSquareText,
 } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { Avatar } from '../ui/Avatar';
+import { socialService } from '../../services/socialService';
+import { profileService } from '../../services/profileService';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useApiData } from '../../hooks/useApiData';
+import { timeAgo } from '../../lib/format';
 
 type Tab = 'Principal' | 'Arquivados' | 'Solicitações';
 
 interface Conversation {
+    contatoId: number;
     name: string;
     verified?: boolean;
     last: string;
@@ -16,38 +22,28 @@ interface Conversation {
     unread?: number;
 }
 
-const PRINCIPAL: Conversation[] = [
-    { name: 'Dra. Maria Glenda', verified: true, last: 'Vou precisar apenas do seu cpf...', time: '7:21' },
-    { name: 'Dr. Marcos Toledo', verified: true, last: 'Perfeito, até lá! 😊', time: 'Ontem' },
-    { name: 'Luana Paiva', verified: true, last: 'Obrigada, doutor! 🙏', time: 'Ter' },
-];
+interface RawConversa { contato_id: number; ultima_mensagem: string; dt_envio: string }
 
-const SOLICITACOES: Conversation[] = [
-    { name: 'Joana Pinha', verified: true, last: 'Olá, tudo bem? Sou...', time: 'Há 17 dias', unread: 2 },
-];
-
-type Msg =
-    | { type: 'day'; text: string }
-    | { type: 'out' | 'in'; text: string; time: string }
-    | { type: 'call-in' | 'call-end'; text: string; time: string };
-
-const MESSAGES: Msg[] = [
-    { type: 'day', text: 'Hoje' },
-    { type: 'out', text: 'Você tem disponibilidade para atender hj às 17hrs', time: '7:10' },
-    { type: 'call-in', text: 'Chamada Recebida', time: '17:00' },
-    { type: 'call-end', text: 'Chamada Finalizada', time: '17:00' },
-    { type: 'in', text: 'Tenho sim', time: '7:21' },
-    { type: 'in', text: 'Vou precisar apenas do seu cpf para fazer o cadastro', time: '7:21' },
-];
+/** Conversas reais do usuário (`GET /conversas`) com nome do contato enriquecido. */
+async function fetchConversas(): Promise<Conversation[]> {
+    const raw = await socialService.conversas.list<{ results: RawConversa[] } | RawConversa[]>();
+    const list = Array.isArray(raw) ? raw : raw?.results ?? [];
+    return Promise.all(list.map(async (c) => {
+        let name = `Usuário ${c.contato_id}`, verified = false;
+        try { const u = await profileService.getPublicUser<{ nome?: string; is_verificado?: boolean }>(c.contato_id); if (u) { name = u.nome || name; verified = !!u.is_verificado; } } catch { /* fallback */ }
+        return { contatoId: c.contato_id, name, verified, last: c.ultima_mensagem, time: timeAgo(c.dt_envio) };
+    }));
+}
 
 export function MiniConversas({ open, onClose }: { open: boolean; onClose: () => void }) {
     const navigate = useNavigate();
     const [tab, setTab] = useState<Tab>('Principal');
     const [chat, setChat] = useState<Conversation | null>(null);
+    const { data: principal } = useApiData<Conversation[]>(fetchConversas, [], []);
 
     if (!open) return null;
 
-    const list = tab === 'Principal' ? PRINCIPAL : tab === 'Solicitações' ? SOLICITACOES : [];
+    const list = tab === 'Principal' ? principal : [];
 
     return (
         <div className="fixed top-[4.25rem] right-4 z-[60] w-[340px] max-w-[calc(100vw-2rem)] bg-white rounded-2xl shadow-2xl border border-gray-100 flex flex-col overflow-hidden" style={{ maxHeight: 'calc(100vh - 5.5rem)' }}>
@@ -97,7 +93,7 @@ export function MiniConversas({ open, onClose }: { open: boolean; onClose: () =>
                             <EmptyState />
                         ) : (
                             list.map((c) => (
-                                <button key={c.name} onClick={() => setChat(c)} className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left">
+                                <button key={c.contatoId} onClick={() => setChat(c)} className="w-full flex items-center gap-3 px-3 py-2.5 hover:bg-gray-50 transition-colors text-left">
                                     <Avatar name={c.name} size={44} />
                                     <div className="flex-1 min-w-0">
                                         <p className="text-sm font-bold text-gray-900 flex items-center gap-1 truncate">
@@ -131,7 +127,28 @@ function EmptyState() {
     );
 }
 
+interface RawMensagem { remetente_id: number; mensagem: string }
+
 function ThreadView({ chat, onBack }: { chat: Conversation; onBack: () => void }) {
+    const selfId = useAuthStore((s) => s.user?.id) ?? 0;
+    const [draft, setDraft] = useState('');
+    const { data: msgs } = useApiData<{ me: boolean; text: string }[]>(
+        async () => {
+            const raw = await socialService.conversas.historico<RawMensagem[]>({ usuario_id: selfId, contato_id: chat.contatoId });
+            const list = Array.isArray(raw) ? raw : [];
+            return list.map((m) => ({ me: m.remetente_id === selfId, text: m.mensagem }));
+        },
+        [],
+        [chat.contatoId, selfId],
+    );
+
+    const send = async () => {
+        const text = draft.trim();
+        if (!text) return;
+        setDraft('');
+        try { await socialService.conversas.enviar({ destinatario_id: chat.contatoId, mensagem: text }); } catch { /* otimista */ }
+    };
+
     return (
         <div className="flex flex-col flex-1 min-h-0">
             {/* Cabeçalho da conversa */}
@@ -141,43 +158,23 @@ function ThreadView({ chat, onBack }: { chat: Conversation; onBack: () => void }
                 <p className="text-sm font-bold text-gray-900 flex items-center gap-1 flex-1 truncate">
                     {chat.name} {chat.verified && <BadgeCheck size={13} className="text-emerald-500 shrink-0" />}
                 </p>
-                {/* Toggle decorativo */}
-                <span className="w-9 h-5 rounded-full bg-gray-300 p-0.5 flex">
-                    <span className="w-4 h-4 rounded-full bg-white translate-x-4 transition-transform" />
-                </span>
             </div>
 
             {/* Mensagens */}
             <div className="flex-1 overflow-y-auto px-3 py-3 flex flex-col gap-2 bg-gray-50/60">
-                {MESSAGES.map((m, i) => {
-                    if (m.type === 'day') return <div key={i} className="text-center text-[11px] text-gray-400 my-1">{m.text}</div>;
-                    if (m.type === 'call-in') return (
-                        <div key={i} className="self-stretch bg-emerald-500 text-white rounded-xl px-3 py-2.5 flex items-center justify-between text-sm font-semibold">
-                            <span className="flex items-center gap-2"><PhoneIncoming size={16} /> {m.text}</span>
-                            <span className="text-xs font-normal opacity-90">{m.time}</span>
-                        </div>
-                    );
-                    if (m.type === 'call-end') return (
-                        <div key={i} className="self-stretch bg-rose-400 text-white rounded-xl px-3 py-2.5 flex items-center justify-between text-sm font-semibold">
-                            <span className="flex items-center gap-2"><PhoneOff size={16} /> {m.text}</span>
-                            <span className="text-xs font-normal opacity-90">{m.time}</span>
-                        </div>
-                    );
-                    const mine = m.type === 'out';
-                    return (
-                        <div key={i} className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${mine ? 'self-end bg-[#407BFF] text-white rounded-br-md' : 'self-start bg-white border border-gray-100 text-gray-700 rounded-bl-md'}`}>
-                            {m.text}
-                            <span className={`block text-[10px] mt-0.5 ${mine ? 'text-white/70 text-right' : 'text-gray-400'}`}>{m.time}</span>
-                        </div>
-                    );
-                })}
+                {msgs.length === 0 && <p className="text-center text-[11px] text-gray-400 mt-4">Nenhuma mensagem ainda.</p>}
+                {msgs.map((m, i) => (
+                    <div key={i} className={`max-w-[80%] px-3 py-2 rounded-2xl text-sm ${m.me ? 'self-end bg-[#407BFF] text-white rounded-br-md' : 'self-start bg-white border border-gray-100 text-gray-700 rounded-bl-md'}`}>
+                        {m.text}
+                    </div>
+                ))}
             </div>
 
             {/* Input */}
             <div className="flex items-center gap-2 p-2.5 border-t border-gray-100">
                 <button className="text-gray-400 hover:text-[#407BFF] p-1"><Paperclip size={18} /></button>
-                <input placeholder="Digite sua mensagem..." className="flex-1 bg-[#F3F4F6] rounded-full py-2 px-3 text-sm outline-none" />
-                <button className="w-9 h-9 rounded-full bg-[#407BFF] text-white flex items-center justify-center hover:bg-blue-600"><Send size={16} /></button>
+                <input value={draft} onChange={(e) => setDraft(e.target.value)} onKeyDown={(e) => { if (e.key === 'Enter') send(); }} placeholder="Digite sua mensagem..." className="flex-1 bg-[#F3F4F6] rounded-full py-2 px-3 text-sm outline-none" />
+                <button onClick={send} className="w-9 h-9 rounded-full bg-[#407BFF] text-white flex items-center justify-center hover:bg-blue-600"><Send size={16} /></button>
             </div>
         </div>
     );

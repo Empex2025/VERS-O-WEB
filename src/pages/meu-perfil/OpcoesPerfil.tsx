@@ -93,9 +93,9 @@ export function OpcoesPerfil() {
 
                     {/* Card do usuário */}
                     <div className="flex items-center gap-3 mt-6 pt-4 border-t border-gray-100">
-                        <Avatar name={user?.nome || 'Carlos Magno'} size={40} />
+                        <Avatar name={user?.nome || 'Usuário'} size={40} />
                         <div className="flex-1">
-                            <p className="text-sm font-bold text-gray-900">{user?.nome || 'Carlos Magno'}</p>
+                            <p className="text-sm font-bold text-gray-900">{user?.nome || 'Usuário'}</p>
                             <p className="text-xs text-gray-400 capitalize">{user?.tipo_usuario || 'Paciente'}</p>
                         </div>
                         <button onClick={() => navigate('/meu-perfil/tipo-perfil')} className="text-xs font-bold text-[#407BFF] hover:underline">Trocar Perfil</button>

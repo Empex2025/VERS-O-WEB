@@ -47,7 +47,7 @@ export function MeuPerfil() {
         name: user?.nome ?? 'Carlos Magno',
         handle: user?.username ? `@${user.username}` : user?.email ? `@${user.email.split('@')[0]}` : '@carlos.magno',
         role: roleLabel(user?.tipo_usuario),
-        bio: user?.descricao_bio || 'Clínica geral com 15 anos de experiência formada pela UNIFESP. Minha abordagem une medicina baseada em evidências ao cuidado humano.',
+        bio: user?.descricao_bio || '',
         stats: { posts: compactNumber(mine.posts.length || 3), followers: compactNumber(mine.followers || 4785), following: compactNumber(mine.following || 483) },
     };
     const posts = mine.posts.map((p) => toPost(p, { nome: me.name }));
@@ -93,9 +93,14 @@ export function MeuPerfil() {
                             <Stat value={me.stats.following} label="Seguindo" />
                         </div>
 
-                        <p className="text-sm text-gray-600 mt-3 leading-relaxed">
-                            {me.bio.length > 120 ? me.bio.slice(0, 120) : me.bio} <button className="text-[#407BFF] font-semibold">Ver mais</button>
-                        </p>
+                        {me.bio ? (
+                            <p className="text-sm text-gray-600 mt-3 leading-relaxed">
+                                {me.bio.length > 120 ? me.bio.slice(0, 120) : me.bio}
+                                {me.bio.length > 120 && <button className="text-[#407BFF] font-semibold"> Ver mais</button>}
+                            </p>
+                        ) : (
+                            <p className="text-sm text-gray-400 mt-3">Sem biografia ainda.</p>
+                        )}
                     </div>
                 </div>
 
