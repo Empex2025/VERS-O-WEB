@@ -74,14 +74,16 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
 }
 
 /**
- * Upload de arquivo (multipart). Não define Content-Type — o browser gera o
- * boundary correto do FormData (senão o busboy do backend recusa). Mantém o
- * Bearer token e o tratamento de erro/401 do `api`.
+ * POST multipart com vários campos (File ou string). Não define Content-Type —
+ * o browser gera o boundary correto do FormData. Mantém o Bearer token e o
+ * tratamento de erro/401 do `api`.
  */
-export async function upload<T = unknown>(path: string, file: File, field = 'file'): Promise<T> {
+export async function postForm<T = unknown>(path: string, fields: Record<string, string | Blob | undefined | null>): Promise<T> {
     const token = useAuthStore.getState().token;
     const form = new FormData();
-    form.append(field, file);
+    for (const [k, v] of Object.entries(fields)) {
+        if (v != null) form.append(k, v as string | Blob);
+    }
 
     const res = await fetch(`${API_URL}${path}`, {
         method: 'POST',
@@ -102,4 +104,9 @@ export async function upload<T = unknown>(path: string, file: File, field = 'fil
     }
 
     return data as T;
+}
+
+/** Upload de um único arquivo (atalho sobre `postForm`). */
+export function upload<T = unknown>(path: string, file: File, field = 'file'): Promise<T> {
+    return postForm<T>(path, { [field]: file });
 }

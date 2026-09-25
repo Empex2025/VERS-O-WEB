@@ -1,5 +1,5 @@
 import { useState, useRef } from 'react';
-import { Users, Globe, ChevronDown, ChevronLeft, X, Camera, Image as ImageIcon, UserPlus, MapPin, ChevronRight, Zap, Clapperboard, Radio, Type, Video, Upload, SlidersHorizontal, ZoomIn } from 'lucide-react';
+import { Users, Globe, ChevronDown, ChevronLeft, X, Camera, Image as ImageIcon, UserPlus, MapPin, ChevronRight, Zap, Clapperboard, Radio, Type, Video, Upload, SlidersHorizontal, ZoomIn, Scissors, Sparkles, Maximize2, Loader2, AlertCircle } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Avatar } from '../../components/ui/Avatar';
@@ -172,17 +172,86 @@ function TypeBtn({ icon, label, onClick }: { icon: React.ReactNode; label: strin
 const FLASH_COLORS = ['#407BFF', '#10B981', '#8B5CF6', '#F43F5E', '#F59E0B', '#0EA5E9', '#111827', '#EC4899'];
 const FLASH_GRAD = 'from-sky-300 via-blue-400 to-[#407BFF]';
 
+const PICSART_TOOLS: { key: string; label: string; icon: React.ReactNode; params?: Record<string, string> }[] = [
+    { key: 'removebg', label: 'Remover fundo', icon: <Scissors size={15} /> },
+    { key: 'enhance__color', label: 'Realçar', icon: <Sparkles size={15} /> },
+    { key: 'upscale', label: 'Upscale', icon: <Maximize2 size={15} />, params: { upscale_factor: '2' } },
+];
+
 function FlashEditor({ onClose }: { onClose: () => void }) {
+    const navigate = useNavigate();
+    const userId = useAuthStore((s) => s.user?.id);
     const [step, setStep] = useState<'media' | 'ajustar' | 'canvas'>('media');
     const [color, setColor] = useState(FLASH_COLORS[0]);
     const [flashText, setFlashText] = useState('');
     const [zoom, setZoom] = useState(1);
-    const [hasMedia, setHasMedia] = useState(false);
+
+    // Mídia real: arquivo original + preview + URL já editada (Picsart) para encadear.
+    const [origFile, setOrigFile] = useState<File | null>(null);
+    const [imgUrl, setImgUrl] = useState<string | null>(null);
+    const [editedUrl, setEditedUrl] = useState<string | null>(null);
+    const [busy, setBusy] = useState<string | null>(null);
+    const [err, setErr] = useState<string | null>(null);
+    const [publishing, setPublishing] = useState(false);
+    const fileRef = useRef<HTMLInputElement>(null);
+    const hasMedia = !!imgUrl;
+
+    const pickFile = (files: FileList | null) => {
+        const file = files?.[0];
+        if (!file || !file.type.startsWith('image/')) return;
+        setOrigFile(file);
+        setEditedUrl(null);
+        setImgUrl(URL.createObjectURL(file));
+        setErr(null);
+        setStep('ajustar');
+    };
+
+    // Aplica uma ferramenta Picsart na imagem atual (usa a URL já editada quando houver).
+    const applyPicsart = async (tool: string, params?: Record<string, string>) => {
+        if (busy) return;
+        setBusy(tool);
+        setErr(null);
+        try {
+            const src: File | string = editedUrl ?? origFile!;
+            const url = await socialService.picsart(tool, src, params);
+            if (!url) throw new Error('sem url');
+            setEditedUrl(url);
+            setImgUrl(url);
+        } catch {
+            setErr('Não foi possível aplicar agora. Tente novamente.');
+        } finally {
+            setBusy(null);
+        }
+    };
+
+    const publicar = async () => {
+        setPublishing(true);
+        try {
+            let conteudo = flashText.trim();
+            let tipo = 'texto';
+            if (hasMedia) {
+                // URL final da imagem: a editada pelo Picsart, ou sobe a original.
+                conteudo = editedUrl ?? (origFile ? await socialService.uploadMedia(origFile) : '');
+                tipo = 'imagem';
+            }
+            if (conteudo) {
+                await socialService.stories.create({ autor_id: userId ?? 0, conteudo, tipo_conteudo: tipo });
+            }
+        } catch { /* modo demo / backend indisponível */ } finally {
+            setPublishing(false);
+            navigate('/flashs');
+        }
+    };
+
+    const fileInput = (
+        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={(e) => { pickFile(e.target.files); e.target.value = ''; }} />
+    );
 
     // ---- Passo 1: adicionar mídia ----
     if (step === 'media') {
         return (
             <Overlay>
+                {fileInput}
                 <div className="bg-white rounded-2xl shadow-xl w-full max-w-xl overflow-hidden">
                     <Head onBack={onClose} onClose={onClose}>Adicione Mídia no Flash</Head>
                     <div className="p-10 flex flex-col items-center">
@@ -190,7 +259,7 @@ function FlashEditor({ onClose }: { onClose: () => void }) {
                             <ImageIcon size={56} strokeWidth={1.5} /><Video size={56} strokeWidth={1.5} />
                         </div>
                         <p className="text-base font-bold text-gray-900 mb-5">Arraste as fotos e os vídeos aqui</p>
-                        <button onClick={() => { setHasMedia(true); setStep('ajustar'); }} className="bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm px-6 py-3 rounded-full transition-colors">
+                        <button onClick={() => fileRef.current?.click()} className="bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm px-6 py-3 rounded-full transition-colors">
                             Selecione do Computador
                         </button>
                         <button onClick={() => setStep('canvas')} className="text-xs font-semibold text-gray-400 hover:text-gray-600 mt-4">Pular e usar cor de fundo</button>
@@ -204,14 +273,17 @@ function FlashEditor({ onClose }: { onClose: () => void }) {
     if (step === 'ajustar') {
         return (
             <Overlay>
+                {fileInput}
                 <div className="bg-white rounded-2xl shadow-xl w-full max-w-2xl overflow-hidden">
                     <Head onBack={() => setStep('media')} onClose={onClose}>Arraste a foto para encaixar na moldura</Head>
                     <div className="p-5">
                         <div className="mx-auto w-[240px] aspect-[9/16] rounded-xl overflow-hidden bg-gray-100 flex items-center justify-center">
-                            <div className={`w-full h-full bg-gradient-to-br ${FLASH_GRAD} transition-transform`} style={{ transform: `scale(${zoom})` }} />
+                            {imgUrl
+                                ? <img src={imgUrl} alt="" className="w-full h-full object-cover transition-transform" style={{ transform: `scale(${zoom})` }} />
+                                : <div className={`w-full h-full bg-gradient-to-br ${FLASH_GRAD}`} style={{ transform: `scale(${zoom})` }} />}
                         </div>
                         <div className="flex items-center gap-3 mt-5">
-                            <button className="w-9 h-9 rounded-full bg-[#F3F4F6] flex items-center justify-center text-gray-600"><SlidersHorizontal size={16} /></button>
+                            <button onClick={() => fileRef.current?.click()} className="w-9 h-9 rounded-full bg-[#F3F4F6] flex items-center justify-center text-gray-600" title="Trocar imagem"><SlidersHorizontal size={16} /></button>
                             <button className="w-9 h-9 rounded-full bg-[#407BFF]/10 flex items-center justify-center text-[#407BFF]"><ZoomIn size={16} /></button>
                             <input type="range" min={1} max={3} step={0.05} value={zoom} onChange={(e) => setZoom(Number(e.target.value))} className="flex-1 accent-[#407BFF]" />
                             <button onClick={() => setStep('canvas')} className="bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm px-6 py-2.5 rounded-full transition-colors">Continuar</button>
@@ -222,16 +294,44 @@ function FlashEditor({ onClose }: { onClose: () => void }) {
         );
     }
 
-    // ---- Passo 3: canvas (texto + cor) ----
+    // ---- Passo 3: canvas (texto + cor + ferramentas Picsart) ----
     return (
         <Overlay>
+            {fileInput}
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-sm overflow-hidden">
                 <Head onBack={() => setStep(hasMedia ? 'ajustar' : 'media')} onClose={onClose}><Type size={18} className="inline mr-1" /> Criar Flash</Head>
                 <div className="p-4">
                     <div className="relative rounded-xl aspect-[9/16] overflow-hidden flex items-center justify-center p-6" style={hasMedia ? undefined : { backgroundColor: color }}>
-                        {hasMedia && <div className={`absolute inset-0 bg-gradient-to-br ${FLASH_GRAD}`} style={{ transform: `scale(${zoom})` }} />}
-                        <textarea value={flashText} onChange={(e) => setFlashText(e.target.value)} placeholder="Escreva algo..." className="relative w-full bg-transparent text-white text-center text-xl font-bold outline-none resize-none placeholder-white/60" rows={4} />
+                        {hasMedia && <img src={imgUrl!} alt="" className="absolute inset-0 w-full h-full object-cover" style={{ transform: `scale(${zoom})` }} />}
+                        {busy && (
+                            <div className="absolute inset-0 bg-black/40 flex flex-col items-center justify-center text-white gap-2 z-10">
+                                <Loader2 size={26} className="animate-spin" />
+                                <span className="text-xs font-semibold">Processando…</span>
+                            </div>
+                        )}
+                        <textarea value={flashText} onChange={(e) => setFlashText(e.target.value)} placeholder="Escreva algo..." className="relative w-full bg-transparent text-white text-center text-xl font-bold outline-none resize-none placeholder-white/60 drop-shadow" rows={4} />
                     </div>
+
+                    {/* Ferramentas Picsart (só com imagem) */}
+                    {hasMedia && (
+                        <div className="mt-3">
+                            <div className="flex gap-2">
+                                {PICSART_TOOLS.map((t) => (
+                                    <button
+                                        key={t.key}
+                                        onClick={() => applyPicsart(t.key, t.params)}
+                                        disabled={!!busy}
+                                        className="flex-1 flex flex-col items-center gap-1 py-2 rounded-xl bg-[#F3F4F6] text-gray-700 text-[11px] font-semibold hover:bg-[#407BFF]/10 hover:text-[#407BFF] transition-colors disabled:opacity-50"
+                                    >
+                                        {busy === t.key ? <Loader2 size={15} className="animate-spin" /> : t.icon}
+                                        {t.label}
+                                    </button>
+                                ))}
+                            </div>
+                            {err && <p className="text-xs text-rose-500 flex items-center gap-1 mt-2"><AlertCircle size={12} /> {err}</p>}
+                        </div>
+                    )}
+
                     {!hasMedia && (
                         <div className="flex gap-2 justify-center mt-4">
                             {FLASH_COLORS.map((c) => (
@@ -241,7 +341,9 @@ function FlashEditor({ onClose }: { onClose: () => void }) {
                     )}
                 </div>
                 <div className="p-4 border-t border-gray-100">
-                    <button onClick={onClose} className="w-full bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors">Publicar Flash</button>
+                    <button onClick={publicar} disabled={publishing || !!busy} className="w-full bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors disabled:opacity-60">
+                        {publishing ? 'Publicando…' : 'Publicar Flash'}
+                    </button>
                 </div>
             </div>
         </Overlay>

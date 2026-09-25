@@ -7,7 +7,7 @@ import { socialService } from '../../services/socialService';
 import { profileService } from '../../services/profileService';
 import { useApiData } from '../../hooks/useApiData';
 
-interface Flash { id?: number; nome: string; handle: string; grad: string; texto?: string }
+interface Flash { id?: number; nome: string; handle: string; grad: string; texto?: string; img?: string }
 
 const GRADS = ['from-[#407BFF] to-violet-500', 'from-slate-600 to-slate-800', 'from-amber-200 to-emerald-200', 'from-sky-300 to-blue-500'];
 
@@ -17,7 +17,15 @@ const FLASHS: Flash[] = [
     { nome: 'Dr. Marcos Toledo', handle: '@dr.marcos.toledo', grad: 'from-amber-200 to-emerald-200', texto: 'Olá\nBOM DIA' },
 ];
 
-interface RawStory { id?: number; autor_id?: number; texto?: string; legenda?: string }
+interface RawStory { id?: number; autor_id?: number; conteudo?: string; tipo_conteudo?: string; texto?: string; legenda?: string }
+
+/** Story de imagem quando o tipo é imagem/foto/video ou o conteúdo é uma URL. */
+function storyImage(s: RawStory): string | undefined {
+    const t = (s.tipo_conteudo || '').toLowerCase();
+    if (/imag|foto|video/.test(t)) return s.conteudo || undefined;
+    if (s.conteudo && /^https?:\/\//.test(s.conteudo)) return s.conteudo;
+    return undefined;
+}
 
 /** Stories reais (autor enriquecido) → flashs; cai no mock quando vazio. */
 async function fetchFlashs(): Promise<Flash[]> {
@@ -29,12 +37,14 @@ async function fetchFlashs(): Promise<Flash[]> {
     await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<{ nome?: string; username?: string }>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
     return list.map((s, i) => {
         const u = s.autor_id ? byId.get(s.autor_id) : undefined;
+        const img = storyImage(s);
         return {
             id: s.id,
             nome: u?.nome || `Usuário ${s.autor_id ?? i + 1}`,
             handle: u?.username ? `@${u.username}` : '@usuario',
             grad: GRADS[i % GRADS.length],
-            texto: s.texto || s.legenda,
+            texto: img ? (s.texto || s.legenda) : (s.conteudo || s.texto || s.legenda),
+            img,
         };
     });
 }
@@ -71,7 +81,9 @@ export function Flashs() {
 
                 {/* Ativo */}
                 <div className="relative w-[300px] sm:w-[340px] aspect-[9/16] rounded-2xl overflow-hidden shadow-xl shrink-0">
-                    <div className={`absolute inset-0 bg-gradient-to-br ${flash.grad}`} />
+                    {flash.img
+                        ? <img src={flash.img} alt="" className="absolute inset-0 w-full h-full object-cover" />
+                        : <div className={`absolute inset-0 bg-gradient-to-br ${flash.grad}`} />}
                     {flash.texto && (
                         <div className="absolute inset-0 flex items-center justify-center text-center">
                             <p className="text-white/90 text-3xl font-black leading-tight whitespace-pre-line drop-shadow">{flash.texto}</p>
@@ -116,7 +128,9 @@ function SideStory({ flash, onClick, side }: { flash: Flash; onClick: () => void
     return (
         <div className="relative hidden md:block shrink-0">
             <button onClick={onClick} className="block w-[150px] aspect-[9/16] rounded-xl overflow-hidden opacity-25 hover:opacity-40 transition-opacity">
-                <div className={`w-full h-full bg-gradient-to-br ${flash.grad}`} />
+                {flash.img
+                    ? <img src={flash.img} alt="" className="w-full h-full object-cover" />
+                    : <div className={`w-full h-full bg-gradient-to-br ${flash.grad}`} />}
             </button>
             <p className="text-center text-[11px] text-gray-500 mt-2">{flash.handle}</p>
             <button

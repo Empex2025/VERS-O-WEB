@@ -1,4 +1,4 @@
-import { api, upload } from './http';
+import { api, upload, postForm } from './http';
 import { makeCrud, qs } from './crud';
 import { profileService } from './profileService';
 import { timeAgo, compactNumber } from '../lib/format';
@@ -73,6 +73,17 @@ export const socialService = {
     viewStory: (id: number | string) => api(`${P}/story/${id}/view`, { method: 'POST', body: {} }),
     /** Faz upload de uma imagem/mídia e retorna a URL pública (`POST /upload-files`). */
     uploadMedia: (file: File) => upload<{ url: string }>(`${P}/upload-files`, file).then((r) => r.url),
+
+    /**
+     * Proxy Picsart (`POST /picsart/:tool`). Aceita um File (campo `image`) ou uma
+     * URL pública (campo `image_url`) + params da ferramenta. Retorna a URL da
+     * imagem processada. Tools: removebg, upscale, enhance__color, effects…
+     */
+    picsart: (tool: string, src: File | string, params: Record<string, string> = {}) =>
+        postForm<{ data?: { url?: string }; status?: string; message?: string }>(
+            `${P}/picsart/${tool}`,
+            { [typeof src === 'string' ? 'image_url' : 'image']: src, ...params },
+        ).then((r) => r?.data?.url ?? null),
     profissionalDetalhes: makeCrud(P, 'profissional-detalhes'),
     anuncios: makeCrud(P, 'anuncio'),
 
