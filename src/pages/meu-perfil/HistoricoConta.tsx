@@ -35,24 +35,10 @@ async function fetchHistorico(): Promise<{ today: Entry[]; last7: Entry[] }> {
     return { today, last7 };
 }
 
-const HOJE: Entry[] = [
-    { icon: Mail, title: 'Email', text: 'Você alterou seu email para seuemail@exemplo.com', time: 'Há 05 Minutos' },
-    { icon: FileText, title: 'Biografia', text: 'Você alterou sua biografia para "Momento de cuidar de você..."', time: 'Há 40 Minutos' },
-    { icon: FileText, title: 'Biografia', text: 'Você alterou sua biografia para "Momento de bem-estar..."', time: 'Há 1 hora' },
-    { icon: ImageIcon, title: 'Foto de Perfil', text: 'Você atualizou sua foto de perfil', time: 'Há 2 horas' },
-];
-
-const SETE_DIAS: Entry[] = [
-    { icon: Phone, title: 'Telefone', text: 'Você alterou seu telefone para (00) 94002-8922', time: 'Há 3 dias' },
-    { icon: Lock, title: 'Privacidade', text: 'Você tornou sua conta privada', time: 'Há 4 dias' },
-    { icon: UserRound, title: 'Nome', text: 'Você alterou seu nome para Carlos Magno', time: 'Há 5 dias' },
-    { icon: AtSign, title: 'Nome de Usuário', text: 'Você alterou seu nome de usuário para @carlos.magno', time: 'Há 6 dias' },
-];
-
 const FILTERS = ['De recentes a mais antigos', 'Todas as datas', 'Tipo de alteração'];
 
 export function HistoricoConta() {
-    const { data: hist } = useApiData(fetchHistorico, { today: HOJE, last7: SETE_DIAS }, []);
+    const { data: hist } = useApiData(fetchHistorico, { today: [] as Entry[], last7: [] as Entry[] }, []);
     return (
         <AppShell rightRail={null}>
             <div className="max-w-2xl mx-auto">

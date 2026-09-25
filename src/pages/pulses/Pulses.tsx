@@ -17,14 +17,6 @@ interface RawComment { id?: number; id_comentario?: number; id_postagem?: number
 interface RawUser { nome?: string; username?: string; is_verificado?: boolean }
 interface Pulse { id: number; authorName: string; authorHandle: string; verified: boolean; caption: string; likes: number; comments: number }
 
-const PULSE_FALLBACK: Pulse[] = [
-    { id: -1, authorName: 'Dr. Walter Alencar', authorHandle: '@dr.walter.alencar', verified: true, caption: '😴 Você sabia que seu cérebro faz uma faxina enquanto você dorme?', likes: 25000, comments: 2000 },
-];
-const COMMENTS_FALLBACK = [
-    { name: 'Jorge Zikenay', text: 'Rotina rápida de 3 exercícios para aliviar dor nas costas.', time: 'Há 1d' },
-    { name: 'anapaulanutri', text: 'Não sabia disso até me deparar com esse vídeo!', time: '15:24' },
-];
-
 async function fetchPulses(): Promise<Pulse[]> {
     const raw = await socialService.posts.list<{ results: RawPost[] } | RawPost[]>();
     const list = Array.isArray(raw) ? raw : raw?.results ?? [];
@@ -44,22 +36,22 @@ async function fetchPulses(): Promise<Pulse[]> {
 
 export function Pulses() {
     const selfId = useAuthStore((s) => s.user?.id) ?? 0;
-    const { data: pulses } = useApiData(fetchPulses, PULSE_FALLBACK, []);
+    const { data: pulses } = useApiData(fetchPulses, [] as Pulse[], []);
     const [idx, setIdx] = useState(0);
     const [showComments, setShowComments] = useState(false);
     const [showMenu, setShowMenu] = useState(false);
     const [liked, setLiked] = useState(false);
     const [sharing, setSharing] = useState(false);
     const [draft, setDraft] = useState('');
-    const [comments, setComments] = useState<{ name: string; text: string; time?: string }[]>(COMMENTS_FALLBACK);
+    const [comments, setComments] = useState<{ name: string; text: string; time?: string }[]>([]);
 
-    const pulse = pulses[idx] ?? PULSE_FALLBACK[0];
-    const isReal = pulse.id > 0;
+    const pulse = pulses[idx];
+    const isReal = !!pulse && pulse.id > 0;
 
     // Carrega comentários reais do pulse ativo.
     useEffect(() => {
         let alive = true;
-        if (!isReal) { setComments(COMMENTS_FALLBACK); return; }
+        if (!isReal || !pulse) { setComments([]); return; }
         (async () => {
             try {
                 const raw = await socialService.comentarios.list<{ results: RawComment[] } | RawComment[]>({ id_postagem: pulse.id });
@@ -74,7 +66,7 @@ export function Pulses() {
             } catch { if (alive) setComments([]); }
         })();
         return () => { alive = false; };
-    }, [pulse.id, isReal]);
+    }, [pulse?.id, isReal]);
 
     const go = (d: number) => {
         setIdx((i) => Math.max(0, Math.min(pulses.length - 1, i + d)));
@@ -84,7 +76,7 @@ export function Pulses() {
     const like = async () => {
         const next = !liked;
         setLiked(next);
-        if (next && isReal) { try { await socialService.likePost(pulse.id, selfId); } catch { /* otimista */ } }
+        if (next && isReal && pulse) { try { await socialService.likePost(pulse.id, selfId); } catch { /* otimista */ } }
     };
 
     const sendComment = async () => {
@@ -92,8 +84,18 @@ export function Pulses() {
         if (!text) return;
         setComments((c) => [{ name: 'Você', text }, ...c]);
         setDraft('');
-        if (isReal) { try { await socialService.comment(pulse.id, selfId, text); } catch { /* otimista */ } }
+        if (isReal && pulse) { try { await socialService.comment(pulse.id, selfId, text); } catch { /* otimista */ } }
     };
+
+    if (!pulse) {
+        return (
+            <AppShell rightRail={null} bare>
+                <div className="flex items-center justify-center min-h-[calc(100vh-4rem)] text-sm text-gray-400">
+                    Nenhum pulse disponível no momento.
+                </div>
+            </AppShell>
+        );
+    }
 
     return (
         <AppShell rightRail={null} bare>

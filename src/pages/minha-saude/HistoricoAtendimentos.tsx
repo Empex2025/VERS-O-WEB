@@ -25,7 +25,7 @@ function mapStatus(s?: string): Status {
 async function fetchHistorico(): Promise<Grupo[]> {
     const raw = await teleconsultaService.agendamentos.list<{ results: RawAppt[] } | RawAppt[]>();
     const list = Array.isArray(raw) ? raw : raw?.results ?? [];
-    if (!list.length) return GRUPOS;
+    if (!list.length) return [];
     const ids = [...new Set(list.map((a) => a.id_usuario_profissional).filter(Boolean))] as number[];
     const byId = new Map<number, { nome?: string }>();
     await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<{ nome?: string }>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
@@ -38,18 +38,6 @@ async function fetchHistorico(): Promise<Grupo[]> {
     return [...grupos.entries()].map(([data, itens]) => ({ data, itens }));
 }
 
-const GRUPOS: Grupo[] = [
-    { data: 'Quarta, 23 de Abril', itens: [{ nome: 'Dra. Maria Glenda', tipo: 'Consulta Geral', status: 'Concluído' }] },
-    { data: 'Segunda, 21 de Abril', itens: [
-        { nome: 'Dra. Maria Glenda', tipo: 'Consulta Geral', status: 'Cancelado' },
-        { nome: 'Clínica Mais Saúde', tipo: 'Raio-X e Hemograma', status: 'Concluído' },
-    ] },
-    { data: 'Sexta, 18 de Abril', itens: [
-        { nome: 'Dra. Maria Glenda', tipo: 'Consulta Geral', status: 'Reagendado' },
-        { nome: 'Dra. Maria Glenda', tipo: 'Consulta Geral', status: 'Cancelado' },
-    ] },
-];
-
 const BADGE: Record<Status, string> = {
     'Concluído': 'bg-emerald-50 text-emerald-600',
     'Cancelado': 'bg-rose-50 text-rose-500',
@@ -59,7 +47,7 @@ const BADGE: Record<Status, string> = {
 export function HistoricoAtendimentos() {
     const navigate = useNavigate();
     const [busca, setBusca] = useState('');
-    const { data: GRUPOS_DATA } = useApiData(fetchHistorico, GRUPOS, []);
+    const { data: GRUPOS_DATA } = useApiData(fetchHistorico, [], []);
 
     return (
         <AppShell>
@@ -81,6 +69,9 @@ export function HistoricoAtendimentos() {
 
                 {/* Grupos */}
                 <div className="flex flex-col gap-4">
+                    {GRUPOS_DATA.length === 0 && (
+                        <p className="text-sm text-gray-400 text-center py-10">Nenhum atendimento no histórico.</p>
+                    )}
                     {GRUPOS_DATA.map((g) => (
                         <div key={g.data}>
                             <p className="text-xs text-gray-400 mb-2">{g.data}</p>

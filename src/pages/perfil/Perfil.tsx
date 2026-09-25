@@ -183,12 +183,12 @@ function MenuRow({ icon, label, danger, onClick }: { icon: React.ReactNode; labe
 interface RawUser { id: number; nome?: string; username?: string; descricao_bio?: string | null; is_verificado?: boolean; tipo_usuario?: string }
 
 const PERFIL_FALLBACK: ProfileData = {
-    name: 'Dra. Maria Glenda',
-    handle: '@dra.mariaglenda',
-    verified: true,
-    professional: true,
-    bio: 'Clínica Geral · Atendimento humanizado. Compartilho conteúdo sobre saúde, prevenção e bem-estar. 💙',
-    stats: { posts: '124', followers: '23mil', following: '2.870' },
+    name: 'Usuário',
+    handle: '@usuario',
+    verified: false,
+    professional: false,
+    bio: '',
+    stats: { posts: '0', followers: '0', following: '0' },
 };
 
 /** Resolve o `:handle` (username ou id) para um usuário real. */

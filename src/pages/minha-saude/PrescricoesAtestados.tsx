@@ -25,45 +25,23 @@ function docFromTipo(tipo: string, validade: string, cid?: string): Doc {
 async function fetchDocs(): Promise<Doc[]> {
     const raw = await teleconsultaService.documentos.list<{ results: RawDoc[] } | RawDoc[]>();
     const list = Array.isArray(raw) ? raw : raw?.results ?? [];
-    if (!list.length) return DOCS;
+    if (!list.length) return [];
     return list.map((d) => docFromTipo(d.tipo || d.titulo || 'prescricao', d.valido_ate || d.validade || 'Válido até 30 de Maio', d.cid));
 }
 
-const DOCS: Doc[] = [
-    {
-        tipo: 'atestado',
-        titulo: 'Atestado Médico',
-        validade: 'Válido até 30 de Maio',
-        accent: 'bg-rose-400',
-        preview: (
-            <>Eu, <span className="font-bold text-gray-700">Dr. Nome do Profissional</span>, CRM 123456-AL, atesto para os devidos fins que o paciente <span className="font-bold text-gray-700">Nome do Paciente</span>, foi atendido e diagnosticado em <span className="font-bold text-gray-700">30/05/2025</span> e necessita de afastamento de suas atividades por <span className="font-bold text-gray-700">3 (três) dias</span> pelo motivo especificado no CID-10 abaixo:</>
-        ),
-    },
-    {
-        tipo: 'exames',
-        titulo: 'Solicitação de Exames',
-        validade: 'Válido até 30 de Maio',
-        accent: 'bg-[#407BFF]',
-        preview: <>CID-10: <span className="font-bold text-gray-700">R53</span></>,
-    },
-    {
-        tipo: 'prescricao',
-        titulo: 'Prescrição de Medicamentos',
-        validade: 'Válido até 30 de Maio',
-        accent: 'bg-[#407BFF]',
-        preview: <>CID-10: <span className="font-bold text-gray-700">R53</span></>,
-    },
-];
 
 export function PrescricoesAtestados() {
     const navigate = useNavigate();
-    const { data: docs } = useApiData(fetchDocs, DOCS, []);
+    const { data: docs } = useApiData(fetchDocs, [], []);
     return (
         <AppShell>
             <div className="max-w-2xl mx-auto">
                 <PageHeader title="Documentos Disponíveis" to="/minha-saude" />
 
                 <div className="flex flex-col gap-4">
+                    {docs.length === 0 && (
+                        <p className="text-sm text-gray-400 text-center py-10">Nenhum documento disponível.</p>
+                    )}
                     {docs.map((d, i) => (
                         <button
                             key={i}

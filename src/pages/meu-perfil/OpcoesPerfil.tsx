@@ -266,12 +266,6 @@ function PermissoesModal({ onClose }: { onClose: () => void }) {
 }
 
 interface RawValidation { doc_type?: string; status?: string }
-const DOCS_FALLBACK = [
-    { label: 'Documento Oficial com Foto', status: 'approved' },
-    { label: 'Carteira Profissional Válida', status: 'approved' },
-    { label: 'Registro de Qualificação de Especialista', status: 'approved' },
-    { label: 'Selfie', status: 'approved' },
-];
 function statusLabel(status?: string) {
     const s = (status || '').toLowerCase();
     if (s.includes('approv') || s.includes('verif')) return { text: 'Verificado', ok: true };
@@ -284,7 +278,7 @@ async function fetchDocs() {
     return list.map((v) => ({ label: v.doc_type || 'Documento', status: v.status || 'pending' }));
 }
 function DocumentosModal({ onClose }: { onClose: () => void }) {
-    const { data: docs } = useApiData(fetchDocs, DOCS_FALLBACK, []);
+    const { data: docs } = useApiData(fetchDocs, [] as { label: string; status: string }[], []);
     return (
         <Modal title="Meus Documentos" onClose={onClose}>
             <div className="p-4 flex flex-col gap-2">
@@ -325,10 +319,6 @@ function CardPreview({ number = '**** **** **** 4567', holder = 'Jamile C. de Ol
 
 interface RawCard { id?: number; brand?: string; nickname?: string; holder_name?: string }
 interface CardItem { id?: number; brand: string; num: string }
-const CARDS_FALLBACK: CardItem[] = [
-    { brand: 'Cartão Inter', num: '**** **** **** 0123' },
-    { brand: 'Cartão Banco do Brasil', num: '**** **** **** 1234' },
-];
 async function fetchCards(): Promise<CardItem[]> {
     const raw = await profileService.cards.list<RawCard[] | { results: RawCard[] }>();
     const list = Array.isArray(raw) ? raw : raw?.results ?? [];
@@ -337,8 +327,8 @@ async function fetchCards(): Promise<CardItem[]> {
 
 function CartoesModal({ onClose }: { onClose: () => void }) {
     const [view, setView] = useState<'list' | 'new' | 'delete'>('list');
-    const { data: apiCards } = useApiData(fetchCards, CARDS_FALLBACK, []);
-    const [cards, setCards] = useState<CardItem[]>(CARDS_FALLBACK);
+    const { data: apiCards } = useApiData(fetchCards, [] as CardItem[], []);
+    const [cards, setCards] = useState<CardItem[]>([]);
     useEffect(() => { setCards(apiCards); }, [apiCards]);
     const [pending, setPending] = useState<number | null>(null);
 
@@ -473,10 +463,6 @@ const ADDR_RESULTS = [
 ];
 interface RawAddress { id?: number; label?: string; street?: string; number?: string; neighborhood?: string; city?: string; state?: string; zip_code?: string }
 interface AddrItem { id?: number; label: string; desc: string }
-const ADDR_FALLBACK: AddrItem[] = [
-    { label: 'Casa', desc: 'Q.6, 17 Marquês da Vale - Pará, Brasil 66600-010' },
-    { label: 'Academia', desc: 'Q.6, 17 Marquês da Vale - Pará, Brasil 66600-010' },
-];
 async function fetchAddresses(): Promise<AddrItem[]> {
     const raw = await profileService.addresses.list<RawAddress[] | { results: RawAddress[] }>();
     const list = Array.isArray(raw) ? raw : raw?.results ?? [];
@@ -489,8 +475,8 @@ async function fetchAddresses(): Promise<AddrItem[]> {
 
 function EnderecosModal({ onClose }: { onClose: () => void }) {
     const [view, setView] = useState<'list' | 'new' | 'map' | 'form'>('list');
-    const { data: apiAddrs } = useApiData(fetchAddresses, ADDR_FALLBACK, []);
-    const [addrs, setAddrs] = useState<AddrItem[]>(ADDR_FALLBACK);
+    const { data: apiAddrs } = useApiData(fetchAddresses, [] as AddrItem[], []);
+    const [addrs, setAddrs] = useState<AddrItem[]>([]);
     useEffect(() => { setAddrs(apiAddrs); }, [apiAddrs]);
 
     // Formulário de novo endereço (campos controlados)
@@ -619,7 +605,6 @@ function FormField({ label, placeholder, value, onChange }: { label: string; pla
 
 interface RawPhone { id?: number; number?: string }
 interface PhoneItem { id?: number; number: string }
-const PHONES_FALLBACK: PhoneItem[] = [{ number: '(91) 94082-8922' }];
 async function fetchPhones(): Promise<PhoneItem[]> {
     const raw = await profileService.phones.list<RawPhone[] | { results: RawPhone[] }>();
     const list = Array.isArray(raw) ? raw : raw?.results ?? [];
@@ -628,8 +613,8 @@ async function fetchPhones(): Promise<PhoneItem[]> {
 
 function ContatosModal({ onClose }: { onClose: () => void }) {
     const [view, setView] = useState<'list' | 'add' | 'verify' | 'success' | 'delete'>('list');
-    const { data: apiPhones } = useApiData(fetchPhones, PHONES_FALLBACK, []);
-    const [phones, setPhones] = useState<PhoneItem[]>(PHONES_FALLBACK);
+    const { data: apiPhones } = useApiData(fetchPhones, [] as PhoneItem[], []);
+    const [phones, setPhones] = useState<PhoneItem[]>([]);
     useEffect(() => { if (apiPhones.length) setPhones(apiPhones); }, [apiPhones]);
     const [code, setCode] = useState(['', '', '', '', '', '']);
     const [pendingDelete, setPendingDelete] = useState<number | null>(null);

@@ -19,12 +19,6 @@ const CATEGORIES = [
 interface RawUser { id: number; nome?: string; username?: string; ft_perfil?: string | null; is_verificado?: boolean; tipo_usuario?: string }
 interface Person { id: number; name: string; handle: string; role: string; verified: boolean }
 
-const PEOPLE_FALLBACK: Person[] = [
-    { id: -1, name: 'Dra. Helena Souza', handle: '@helena', role: 'Profissional', verified: true },
-    { id: -2, name: 'Clínica Bem Viver', handle: '@bemviver', role: 'Clínica', verified: true },
-    { id: -3, name: 'Marcos Lima', handle: '@marcos', role: 'Paciente', verified: false },
-];
-
 function roleLabel(t?: string) {
     return t === 'profissional' ? 'Profissional' : t === 'clinica' ? 'Clínica' : 'Paciente';
 }
@@ -47,7 +41,7 @@ async function fetchPeople(): Promise<Person[]> {
 export function Explorar() {
     const [query, setQuery] = useState('');
     const trimmed = query.trim().toLowerCase();
-    const { data: people } = useApiData(fetchPeople, PEOPLE_FALLBACK, []);
+    const { data: people } = useApiData(fetchPeople, [] as Person[], []);
 
     const filtered = useMemo(() => {
         if (!trimmed) return people;

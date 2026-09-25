@@ -12,12 +12,6 @@ interface Flash { id?: number; nome: string; handle: string; grad: string; texto
 
 const GRADS = ['from-[#407BFF] to-violet-500', 'from-slate-600 to-slate-800', 'from-amber-200 to-emerald-200', 'from-sky-300 to-blue-500'];
 
-const FLASHS: Flash[] = [
-    { nome: 'Dra. Maria Glenda', handle: '@dra.mariaglen', grad: 'from-[#407BFF] to-violet-500', texto: 'médico\nMÉDICO\nmedico' },
-    { nome: 'Dr. Walter Alencar', handle: '@dr.walter.alencar', grad: 'from-slate-600 to-slate-800' },
-    { nome: 'Dr. Marcos Toledo', handle: '@dr.marcos.toledo', grad: 'from-amber-200 to-emerald-200', texto: 'Olá\nBOM DIA' },
-];
-
 interface RawStory { id?: number; autor_id?: number; conteudo?: string; tipo_conteudo?: string; texto?: string; legenda?: string }
 
 /** Story de imagem quando o tipo é imagem/foto/video ou o conteúdo é uma URL. */
@@ -32,7 +26,7 @@ function storyImage(s: RawStory): string | undefined {
 async function fetchFlashs(): Promise<Flash[]> {
     const raw = await socialService.stories.list<{ results: RawStory[] } | RawStory[]>();
     const list = Array.isArray(raw) ? raw : raw?.results ?? [];
-    if (!list.length) return FLASHS;
+    if (!list.length) return [];
     const ids = [...new Set(list.map((s) => s.autor_id).filter(Boolean))] as number[];
     const byId = new Map<number, { nome?: string; username?: string }>();
     await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<{ nome?: string; username?: string }>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
@@ -52,14 +46,15 @@ async function fetchFlashs(): Promise<Flash[]> {
 
 export function Flashs() {
     const navigate = useNavigate();
-    const { data: FLASHS_DATA } = useApiData(fetchFlashs, FLASHS, []);
+    const { data: FLASHS_DATA } = useApiData(fetchFlashs, [] as Flash[], []);
     const [idx, setIdx] = useState(0);
-    const items = FLASHS_DATA.length ? FLASHS_DATA : FLASHS;
-    const cur = idx % items.length;
+    const items = FLASHS_DATA;
+    const empty = items.length === 0;
+    const cur = empty ? 0 : idx % items.length;
     const flash = items[cur];
-    const prev = items[(cur - 1 + items.length) % items.length];
-    const next = items[(cur + 1) % items.length];
-    const go = (d: number) => setIdx((i) => (i + d + items.length) % items.length);
+    const prev = empty ? flash : items[(cur - 1 + items.length) % items.length];
+    const next = empty ? flash : items[(cur + 1) % items.length];
+    const go = (d: number) => setIdx((i) => (empty ? 0 : (i + d + items.length) % items.length));
 
     // Registra a visualização do story ativo uma única vez por id (só stories reais).
     const viewedRef = useRef<Set<number>>(new Set());
@@ -69,6 +64,17 @@ export function Flashs() {
         viewedRef.current.add(id);
         socialService.viewStory(id).catch(() => { /* view é best-effort */ });
     }, [flash?.id]);
+
+    if (empty) {
+        return (
+            <AppShell rightRail={null}>
+                <div className="flex flex-col items-center justify-center min-h-[calc(100vh-8rem)] text-center gap-2">
+                    <p className="text-sm text-gray-400">Nenhum flash disponível no momento.</p>
+                    <button onClick={() => navigate('/criar-post')} className="text-sm font-bold text-[#407BFF] hover:underline">Criar um flash</button>
+                </div>
+            </AppShell>
+        );
+    }
 
     return (
         <AppShell rightRail={null}>

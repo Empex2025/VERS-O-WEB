@@ -16,24 +16,6 @@ type Notif = {
     highlight?: boolean;
 };
 
-const TODAY: Notif[] = [
-    { name: 'iSaúde', text: 'Consulta agendada para hoje. A consulta com a Dra. Maria Glenda...', time: 'Há 05 Minutos', highlight: true },
-    { name: 'Nome de Usuário', text: 'curtiu sua publicação.', time: 'Há 05 Minutos' },
-    { name: 'Nome de Usuário', text: 'curtiu sua publicação.', time: 'Há 05 Minutos' },
-    { name: 'Nome de Usuário', text: 'curtiu sua publicação.', time: 'Há 05 Minutos' },
-    { name: 'Nome de Usuário', text: 'curtiu sua publicação.', time: 'Há 05 Minutos' },
-    { name: 'Nome de Usuário', text: 'começou a seguir você.', time: 'Há 05 Minutos', action: 'follow' },
-    { name: 'Nome de Usuário', text: 'mencionou você em um comentário.', time: 'Há 05 Minutos', action: 'mention' },
-];
-
-const LAST_7: Notif[] = [
-    { name: 'Nome de Usuário', text: 'quer seguir você.', time: 'Há 05 Minutos', action: 'follow' },
-    { name: 'Nome de Usuário', text: 'que você conhece está no iSaúde.', time: 'Há 05 Minutos' },
-    { name: 'Nome de Usuário', text: 'comentou na sua publicação.', time: 'Há 05 Minutos' },
-    { name: 'Nome de Usuário', text: 'comentou na sua publicação.', time: 'Há 05 Minutos' },
-    { name: 'iSaúde', text: 'Consulta agendada. Você agendou uma consulta para dia...', time: 'Há 05 Minutos', highlight: true },
-];
-
 const TABS = ['Principal', 'Arquivadas', 'Solicitações'] as const;
 
 interface RawNotif {
@@ -71,7 +53,7 @@ async function fetchNotifs(): Promise<{ today: Notif[]; last7: Notif[] }> {
 
 export function Notificacoes() {
     const [tab, setTab] = useState<(typeof TABS)[number]>('Principal');
-    const { data: notifs } = useApiData(fetchNotifs, { today: TODAY, last7: LAST_7 }, []);
+    const { data: notifs } = useApiData(fetchNotifs, { today: [] as Notif[], last7: [] as Notif[] }, []);
     const { data: feed } = useApiData(() => socialService.getFeed({ limit: 1 }), [], []);
 
     return (
