@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { Users, Globe, ChevronDown, ChevronLeft, X, Camera, Image as ImageIcon, UserPlus, MapPin, ChevronRight, Zap, Clapperboard, Radio, Type, Video, Upload, SlidersHorizontal, ZoomIn } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
@@ -20,23 +20,45 @@ export function CriarPost() {
     const [publishing, setPublishing] = useState(false);
     const [audOpen, setAudOpen] = useState(false);
     const [aud, setAud] = useState(AUDIENCES[0]);
-    const [photos, setPhotos] = useState<string[]>([]);
+    const [photos, setPhotos] = useState<{ file: File; preview: string }[]>([]);
     const [pessoas, setPessoas] = useState(0);
     const [local, setLocal] = useState<string | null>(null);
     const userId = useAuthStore((s) => s.user?.id);
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    const addPhotos = (files: FileList | null) => {
+        if (!files) return;
+        const imgs = Array.from(files).filter((f) => f.type.startsWith('image/'));
+        setPhotos((p) => [...p, ...imgs.map((file) => ({ file, preview: URL.createObjectURL(file) }))]);
+    };
+
+    const removePhoto = (i: number) =>
+        setPhotos((p) => {
+            URL.revokeObjectURL(p[i]?.preview);
+            return p.filter((_, idx) => idx !== i);
+        });
 
     const handlePublish = async () => {
         if (!text.trim() && photos.length === 0) return;
         setPublishing(true);
         try {
-            await socialService.posts.create({ conteudo: text.trim(), autor_id: userId ?? 0, tipo_conteudo: photos.length ? 'foto' : 'texto' });
+            // Sobe as imagens e guarda as URLs públicas em `midias` (JSON).
+            let midias: string | undefined;
+            if (photos.length) {
+                const urls = await Promise.all(photos.map((p) => socialService.uploadMedia(p.file)));
+                midias = JSON.stringify(urls);
+            }
+            await socialService.posts.create({
+                conteudo: text.trim(),
+                autor_id: userId ?? 0,
+                tipo_conteudo: photos.length ? 'foto' : 'texto',
+                ...(midias ? { midias } : {}),
+            });
         } catch { /* modo demo */ } finally {
             setPublishing(false);
             navigate('/inicio');
         }
     };
-
-    const GRADS = ['from-[#407BFF] to-violet-500', 'from-emerald-400 to-teal-500', 'from-slate-500 to-slate-700', 'from-amber-300 to-rose-400'];
 
     return (
         <AppShell rightRail={null}>
@@ -84,10 +106,10 @@ export function CriarPost() {
                     {photos.length > 0 && (
                         <>
                             <div className="flex gap-2 overflow-x-auto mt-3 pb-1">
-                                {photos.map((g, i) => (
+                                {photos.map((p, i) => (
                                     <div key={i} className="relative w-40 h-56 rounded-xl overflow-hidden shrink-0">
-                                        <div className={`w-full h-full bg-gradient-to-br ${g}`} />
-                                        <button onClick={() => setPhotos((p) => p.filter((_, idx) => idx !== i))} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center"><X size={12} /></button>
+                                        <img src={p.preview} alt="" className="w-full h-full object-cover" />
+                                        <button onClick={() => removePhoto(i)} className="absolute top-2 right-2 w-6 h-6 rounded-full bg-black/40 text-white flex items-center justify-center"><X size={12} /></button>
                                     </div>
                                 ))}
                             </div>
@@ -98,8 +120,16 @@ export function CriarPost() {
                     {/* Toolbar + Publicar */}
                     <div className="flex items-center justify-between mt-5 pt-4 border-t border-gray-100">
                         <div className="flex items-center gap-2">
-                            <Tool icon={<Camera size={17} />} onClick={() => setPhotos((p) => [...p, GRADS[p.length % GRADS.length]])} />
-                            <Tool icon={<ImageIcon size={17} />} onClick={() => setPhotos((p) => [...p, GRADS[p.length % GRADS.length]])} />
+                            <input
+                                ref={fileRef}
+                                type="file"
+                                accept="image/*"
+                                multiple
+                                className="hidden"
+                                onChange={(e) => { addPhotos(e.target.files); e.target.value = ''; }}
+                            />
+                            <Tool icon={<Camera size={17} />} onClick={() => fileRef.current?.click()} />
+                            <Tool icon={<ImageIcon size={17} />} onClick={() => fileRef.current?.click()} />
                             <Tool icon={<UserPlus size={17} />} onClick={() => setPessoas((n) => n + 1)} />
                             <Tool icon={<MapPin size={17} />} onClick={() => setLocal('Academia FitHarmony')} />
                         </div>

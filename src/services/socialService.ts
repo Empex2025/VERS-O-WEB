@@ -1,4 +1,4 @@
-import { api } from './http';
+import { api, upload } from './http';
 import { makeCrud, qs } from './crud';
 import { profileService } from './profileService';
 import { timeAgo, compactNumber } from '../lib/format';
@@ -71,6 +71,8 @@ export const socialService = {
     stories: makeCrud(P, 'story'),
     /** Marca um story como visto (`POST /story/:id/view`). */
     viewStory: (id: number | string) => api(`${P}/story/${id}/view`, { method: 'POST', body: {} }),
+    /** Faz upload de uma imagem/mídia e retorna a URL pública (`POST /upload-files`). */
+    uploadMedia: (file: File) => upload<{ url: string }>(`${P}/upload-files`, file).then((r) => r.url),
     profissionalDetalhes: makeCrud(P, 'profissional-detalhes'),
     anuncios: makeCrud(P, 'anuncio'),
 

@@ -72,3 +72,34 @@ export async function api<T = unknown>(path: string, opts: RequestOptions = {}):
 
     return data as T;
 }
+
+/**
+ * Upload de arquivo (multipart). Não define Content-Type — o browser gera o
+ * boundary correto do FormData (senão o busboy do backend recusa). Mantém o
+ * Bearer token e o tratamento de erro/401 do `api`.
+ */
+export async function upload<T = unknown>(path: string, file: File, field = 'file'): Promise<T> {
+    const token = useAuthStore.getState().token;
+    const form = new FormData();
+    form.append(field, file);
+
+    const res = await fetch(`${API_URL}${path}`, {
+        method: 'POST',
+        headers: { ...(token ? { Authorization: `Bearer ${token}` } : {}) },
+        body: form,
+    });
+
+    const isJson = res.headers.get('content-type')?.includes('application/json');
+    const data = isJson ? await res.json().catch(() => null) : await res.text().catch(() => null);
+
+    if (!res.ok) {
+        if (res.status === 401) useAuthStore.getState().logout();
+        const msg =
+            data && typeof data === 'object' && 'message' in data
+                ? String((data as { message: unknown }).message)
+                : `Erro ${res.status}`;
+        throw new ApiError(msg, res.status, data);
+    }
+
+    return data as T;
+}
