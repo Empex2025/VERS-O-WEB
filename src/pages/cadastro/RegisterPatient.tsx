@@ -22,22 +22,24 @@ function isValidCpf(value: string): boolean {
     return calc(9) === parseInt(cpf[9]) && calc(10) === parseInt(cpf[10]);
 }
 
-/** Idade mínima de 18 anos (o backend rejeita menores). */
-function isAdult(dateStr: string): boolean {
+/** Idade mínima aceita pelo backend (MIN_AGE = 15). */
+const MIN_AGE = 15;
+function hasMinAge(dateStr: string): boolean {
     if (!dateStr) return false;
     const d = new Date(dateStr);
     if (isNaN(d.getTime())) return false;
     const now = new Date();
     const age = now.getFullYear() - d.getFullYear() - (now < new Date(now.getFullYear(), d.getMonth(), d.getDate()) ? 1 : 0);
-    return age >= 18;
+    return age >= MIN_AGE;
 }
 
-// 1. Schema de validação dos dados pessoais
+// 1. Schema de validação dos dados pessoais (espelha as regras do backend)
 const patientSchema = z.object({
     fullName: z.string().min(3, 'Nome precisa ter no mínimo 3 letras'),
-    username: z.string().regex(/^[a-z0-9._]{3,30}$/, 'Use 3 a 30: letras minúsculas, números, ponto ou _'),
+    // 3–30 minúsculas/números/./_, sem começar/terminar com ponto nem pontos consecutivos
+    username: z.string().regex(/^(?!\.)(?!.*\.\.)[a-z0-9._]{3,30}(?<!\.)$/, 'Use 3 a 30: minúsculas, números, ponto ou _ (não pode começar/terminar com ponto)'),
     cpf: z.string().refine(isValidCpf, 'CPF inválido'),
-    birthDate: z.string().refine(isAdult, 'É necessário ter pelo menos 18 anos'),
+    birthDate: z.string().refine(hasMinAge, `É necessário ter pelo menos ${MIN_AGE} anos`),
     email: z.string().email('Email inválido'),
     phone: z.string().min(10, 'Telefone incompleto'),
     password: z.string().min(6, 'A senha deve ter no mínimo 6 caracteres'),
@@ -89,12 +91,8 @@ export function RegisterPatient() {
             setSubmitting(false);
             return;
         }
-        // Dispara o e-mail de confirmação (Resend, via backend).
-        try {
-            await authService.sendConfirmationEmail(data.email);
-        } catch {
-            // Backend/Resend indisponível: dá pra reenviar na próxima tela
-        }
+        // O backend (createUser) já dispara o e-mail de confirmação via Resend.
+        // O reenvio fica disponível na tela de verificação.
         setSubmitting(false);
         navigate('/cadastro/verificar-email', { state: { email: data.email } });
     };

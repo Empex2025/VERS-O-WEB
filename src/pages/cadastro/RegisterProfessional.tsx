@@ -63,12 +63,8 @@ export function RegisterProfessional() {
             setSubmitting(false);
             return;
         }
-        // Dispara o e-mail de confirmação (Resend, via backend).
-        try {
-            await authService.sendConfirmationEmail(data.email);
-        } catch {
-            // Backend/Resend indisponível: dá pra reenviar na próxima tela
-        }
+        // O backend (createUser) já dispara o e-mail de confirmação via Resend.
+        // O reenvio fica disponível na tela de verificação.
         setSubmitting(false);
         navigate('/cadastro/verificar-email', { state: { email: data.email } });
     };
