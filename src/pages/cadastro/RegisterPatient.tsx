@@ -154,7 +154,14 @@ export function RegisterPatient() {
                                     {...register('username')}
                                     type="text"
                                     autoCapitalize="none"
+                                    autoCorrect="off"
+                                    spellCheck={false}
                                     placeholder="carlos.magno"
+                                    onChange={(e) => {
+                                        // O backend normaliza p/ minúsculas sem @ — espelha aqui pra não travar quem digita com maiúscula.
+                                        e.target.value = e.target.value.toLowerCase().replace(/^@+/, '').replace(/[^a-z0-9._]/g, '');
+                                        register('username').onChange(e);
+                                    }}
                                     className="w-full bg-transparent border-none py-3.5 pl-12 pr-4 text-sm text-gray-700 outline-none placeholder-gray-400"
                                 />
                             </div>
