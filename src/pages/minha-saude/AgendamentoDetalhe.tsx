@@ -43,7 +43,7 @@ export function AgendamentoDetalhe() {
                             <span className="text-xs font-semibold text-gray-500">{appt.channel}</span>
                         </div>
                         {isTele && (
-                            <button onClick={() => navigate('/minha-saude/consulta')} className="w-full flex items-center justify-center gap-2 bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-xl mt-4 transition-colors">
+                            <button onClick={() => navigate('/minha-saude/consulta', { state: id && /^\d+$/.test(id) ? { agendamentoId: Number(id) } : undefined })} className="w-full flex items-center justify-center gap-2 bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-xl mt-4 transition-colors">
                                 <Video size={16} /> Entrar na Sala de Atendimento
                             </button>
                         )}

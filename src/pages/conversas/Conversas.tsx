@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
-import { Search, Send, Phone, Video, MoreHorizontal, X, Mic, MicOff, PhoneOff } from 'lucide-react';
+import { Search, Send, Phone, Video, MoreHorizontal } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
+import { JitsiRoom } from '../../components/video/JitsiRoom';
 import { Avatar } from '../../components/ui/Avatar';
 import { suggestions } from '../../data/social';
 import { socialService } from '../../services/socialService';
@@ -51,6 +52,8 @@ export function Conversas() {
     const { data: chats } = useApiData(fetchChats, CHATS_FALLBACK, []);
     const [active, setActive] = useState(0);
     const [inCall, setInCall] = useState(false);
+    const [callAudio, setCallAudio] = useState(false);
+    const meName = useAuthStore((s) => s.user?.nome);
     const [messages, setMessages] = useState<{ me: boolean; text: string }[]>(MESSAGES_FALLBACK);
     const [draft, setDraft] = useState('');
     const [sending, setSending] = useState(false);
@@ -128,8 +131,8 @@ export function Conversas() {
                             <p className="text-sm font-bold text-gray-900">{chat?.name ?? 'Conversa'}</p>
                             <p className="text-xs text-emerald-500">online</p>
                         </div>
-                        <button className="text-gray-500 hover:text-[#407BFF] p-2"><Phone size={18} /></button>
-                        <button onClick={() => setInCall(true)} className="text-gray-500 hover:text-[#407BFF] p-2"><Video size={18} /></button>
+                        <button onClick={() => { setCallAudio(true); setInCall(true); }} className="text-gray-500 hover:text-[#407BFF] p-2" title="Chamada de voz"><Phone size={18} /></button>
+                        <button onClick={() => { setCallAudio(false); setInCall(true); }} className="text-gray-500 hover:text-[#407BFF] p-2" title="Chamada de vídeo"><Video size={18} /></button>
                         <button className="text-gray-500 hover:text-[#407BFF] p-2"><MoreHorizontal size={18} /></button>
                     </div>
 
@@ -163,42 +166,15 @@ export function Conversas() {
                 </div>
             </div>
 
-            {/* Chamada de vídeo */}
-            {inCall && <VideoCallOverlay name={chat?.name ?? ''} onEnd={() => setInCall(false)} />}
+            {/* Chamada de voz/vídeo (Jitsi) — sala determinística pelos ids dos participantes */}
+            {inCall && chat && selfId > 0 && (
+                <JitsiRoom
+                    room={`isaude-dm-${[selfId, Math.abs(chat.contatoId)].sort((a, b) => a - b).join('-')}`}
+                    displayName={meName || 'Usuário'}
+                    audioOnly={callAudio}
+                    onEnd={() => setInCall(false)}
+                />
+            )}
         </AppShell>
-    );
-}
-
-function VideoCallOverlay({ name, onEnd }: { name: string; onEnd: () => void }) {
-    const [muted, setMuted] = useState(false);
-    return (
-        <div className="fixed inset-0 z-50 bg-gray-900 flex flex-col items-center justify-center">
-            <button onClick={onEnd} className="absolute top-6 right-6 text-white/70 hover:text-white"><X size={24} /></button>
-
-            {/* Vídeo remoto */}
-            <div className="flex-1 w-full flex items-center justify-center">
-                <div className="text-center">
-                    <Avatar name={name} size={120} />
-                    <p className="text-white font-bold text-lg mt-4">{name}</p>
-                    <p className="text-white/60 text-sm">Chamando…</p>
-                </div>
-            </div>
-
-            {/* Vídeo local (PiP) */}
-            <div className="absolute bottom-28 right-6 w-32 h-44 rounded-xl bg-gray-700 border border-white/10" />
-
-            {/* Controles */}
-            <div className="pb-10 flex items-center gap-5">
-                <button onClick={() => setMuted((v) => !v)} className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center">
-                    {muted ? <MicOff size={22} /> : <Mic size={22} />}
-                </button>
-                <button onClick={onEnd} className="w-16 h-16 rounded-full bg-red-500 hover:bg-red-600 text-white flex items-center justify-center">
-                    <PhoneOff size={26} />
-                </button>
-                <button className="w-14 h-14 rounded-full bg-white/10 hover:bg-white/20 text-white flex items-center justify-center">
-                    <Video size={22} />
-                </button>
-            </div>
-        </div>
     );
 }
