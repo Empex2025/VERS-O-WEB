@@ -73,10 +73,11 @@ apenas o BBF. Base URL em **`VITE_API_URL`** (`.env`), default `http://localhost
 - Respostas trazem só ids de autor (`autor_id`, `id_usuario_profissional`) — enriquecer com
   `profileService.getUser(id)` quando precisar de nome/avatar (ver `socialService.getFeed`).
 - **Telas já ligadas (leitura + fallback)**: login (email+senha), recuperação de senha (3 telas),
-  logout, cadastro (paciente/profissional com senha → `POST /users`; **ativação por link no e-mail via
-  Firebase** — `authService.sendActivationEmail` chama `sendEmailVerification` do Firebase client; tela
-  `cadastro/VerifyEmail` em `/cadastro/verificar-email`; o backend cria o usuário no Firebase com
-  `emailVerified=false` e **bloqueia o login** até verificar), feed (Início), Meus Agendamentos,
+  logout, cadastro (paciente/profissional com senha → `POST /users`; **confirmação de conta por e-mail via
+  Resend** — o backend `createUser` já auto-envia o e-mail; o link é `GET /users/confirm-email?token=`
+  (página HTML do backend); reenvio via `authService.sendConfirmationEmail` → `POST /users/send-confirmation`;
+  tela `cadastro/VerifyEmail` em `/cadastro/verificar-email`; login **bloqueado até `is_verificado=true`** no SQL.
+  Paciente exige `username` + `dt_nascimento`; CPF/telefone enviados só com dígitos), feed (Início), Meus Agendamentos,
   Resultados de Exames, Notificações, Histórico da Conta, Meu Perfil (usuário logado), e os modais de
   Opções de Perfil: Cartões, Endereços, Telefones, Documentos (validação).
   Também: **Flashs** (`GET /story`), **Minhas Curtidas** (`GET /curtida`), **Prescrições e Atestados**
