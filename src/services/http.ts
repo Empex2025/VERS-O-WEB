@@ -20,6 +20,17 @@ function resolveApiUrl(): string {
 
 export const API_URL = resolveApiUrl();
 
+/**
+ * Resolve uma URL de mídia para absoluta. O backend devolve caminhos relativos
+ * (ex.: `/files/xxx.png`) servidos na origem da API — sem isso a imagem
+ * carregaria da origem errada (o front) e o Picsart (`image_url`) não a alcança.
+ */
+export function absoluteUrl(u?: string | null): string {
+    if (!u) return '';
+    if (/^(https?:)?\/\//i.test(u) || u.startsWith('data:') || u.startsWith('blob:')) return u;
+    return `${API_URL}/${u.replace(/^\/+/, '')}`;
+}
+
 export class ApiError extends Error {
     status: number;
     data: unknown;

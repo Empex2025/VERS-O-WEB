@@ -1,4 +1,4 @@
-import { api, upload, postForm } from './http';
+import { api, upload, postForm, absoluteUrl } from './http';
 import { makeCrud, qs } from './crud';
 import { profileService } from './profileService';
 import { timeAgo, compactNumber } from '../lib/format';
@@ -71,8 +71,8 @@ export const socialService = {
     stories: makeCrud(P, 'story'),
     /** Marca um story como visto (`POST /story/:id/view`). */
     viewStory: (id: number | string) => api(`${P}/story/${id}/view`, { method: 'POST', body: {} }),
-    /** Faz upload de uma imagem/mídia e retorna a URL pública (`POST /upload-files`). */
-    uploadMedia: (file: File) => upload<{ url: string }>(`${P}/upload-files`, file).then((r) => r.url),
+    /** Faz upload de uma imagem/mídia e retorna a URL pública ABSOLUTA (`POST /upload-files`). */
+    uploadMedia: (file: File) => upload<{ url: string }>(`${P}/upload-files`, file).then((r) => absoluteUrl(r.url)),
 
     /**
      * Proxy Picsart (`POST /picsart/:tool`). Aceita um File (campo `image`) ou uma
@@ -83,7 +83,7 @@ export const socialService = {
         postForm<{ data?: { url?: string }; status?: string; message?: string }>(
             `${P}/picsart/${tool}`,
             { [typeof src === 'string' ? 'image_url' : 'image']: src, ...params },
-        ).then((r) => r?.data?.url ?? null),
+        ).then((r) => (r?.data?.url ? absoluteUrl(r.data.url) : null)),
     profissionalDetalhes: makeCrud(P, 'profissional-detalhes'),
     anuncios: makeCrud(P, 'anuncio'),
 

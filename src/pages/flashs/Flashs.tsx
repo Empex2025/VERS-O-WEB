@@ -4,6 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Avatar } from '../../components/ui/Avatar';
 import { socialService } from '../../services/socialService';
+import { absoluteUrl } from '../../services/http';
 import { profileService } from '../../services/profileService';
 import { useApiData } from '../../hooks/useApiData';
 
@@ -22,8 +23,8 @@ interface RawStory { id?: number; autor_id?: number; conteudo?: string; tipo_con
 /** Story de imagem quando o tipo é imagem/foto/video ou o conteúdo é uma URL. */
 function storyImage(s: RawStory): string | undefined {
     const t = (s.tipo_conteudo || '').toLowerCase();
-    if (/imag|foto|video/.test(t)) return s.conteudo || undefined;
-    if (s.conteudo && /^https?:\/\//.test(s.conteudo)) return s.conteudo;
+    if (/imag|foto|video/.test(t) && s.conteudo) return absoluteUrl(s.conteudo);
+    if (s.conteudo && /^(https?:\/\/|\/files\/)/.test(s.conteudo)) return absoluteUrl(s.conteudo);
     return undefined;
 }
 
