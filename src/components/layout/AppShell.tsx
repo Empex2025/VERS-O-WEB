@@ -7,7 +7,7 @@ import { NavLink, Link } from 'react-router-dom';
 import { cn } from '../../lib/utils';
 import { Avatar } from '../ui/Avatar';
 import { MiniConversas } from '../social/MiniConversas';
-import { suggestions } from '../../data/social';
+import { useSuggestions } from '../../hooks/useSuggestions';
 import logoImage from '../../assets/login/logo-login.png';
 
 const NAV_ITEMS = [
@@ -24,23 +24,33 @@ const NAV_ITEMS = [
 
 /** Coluna direita padrão: sugestões para seguir + patrocinado */
 export function SuggestionsRail() {
+    const { suggestions, followed, follow } = useSuggestions();
     return (
         <div className="flex flex-col gap-6">
             <div>
                 <h3 className="text-sm font-bold text-gray-900 mb-4">Sugestões para seguir</h3>
                 <div className="flex flex-col gap-3">
-                    {suggestions.map((p) => (
-                        <div key={p.handle} className="flex items-center gap-3">
-                            <Avatar name={p.name} size={40} />
-                            <div className="min-w-0 flex-1">
-                                <p className="text-sm font-semibold text-gray-900 truncate flex items-center gap-1">
-                                    {p.name}
-                                    {p.verified && <span className="text-[#407BFF] text-xs">✔</span>}
-                                </p>
-                                <p className="text-xs text-gray-400 truncate">{p.role}</p>
-                            </div>
-                            <button className="text-xs font-bold text-white bg-[#407BFF] hover:bg-blue-600 px-4 py-1.5 rounded-full transition-colors">
-                                Seguir
+                    {suggestions.length === 0 && (
+                        <p className="text-xs text-gray-400">Nenhuma sugestão no momento.</p>
+                    )}
+                    {suggestions.slice(0, 6).map((p) => (
+                        <div key={p.id} className="flex items-center gap-3">
+                            <Link to={`/perfil/${p.handle.replace(/^@/, '')}`} className="flex items-center gap-3 min-w-0 flex-1">
+                                <Avatar name={p.name} size={40} />
+                                <div className="min-w-0 flex-1">
+                                    <p className="text-sm font-semibold text-gray-900 truncate flex items-center gap-1">
+                                        {p.name}
+                                        {p.verified && <span className="text-[#407BFF] text-xs">✔</span>}
+                                    </p>
+                                    <p className="text-xs text-gray-400 truncate">{p.role}</p>
+                                </div>
+                            </Link>
+                            <button
+                                onClick={() => follow(p.id)}
+                                disabled={followed.has(p.id)}
+                                className="text-xs font-bold px-4 py-1.5 rounded-full transition-colors disabled:bg-gray-100 disabled:text-gray-400 text-white bg-[#407BFF] hover:bg-blue-600"
+                            >
+                                {followed.has(p.id) ? 'Seguindo' : 'Seguir'}
                             </button>
                         </div>
                     ))}

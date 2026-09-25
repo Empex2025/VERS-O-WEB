@@ -4,9 +4,11 @@ import { AppShell } from '../../components/layout/AppShell';
 import { FlashsRow } from '../../components/social/FlashsRow';
 import { PostCard } from '../../components/social/PostCard';
 import { Avatar } from '../../components/ui/Avatar';
-import { feedPosts, suggestions } from '../../data/social';
+import { Link } from 'react-router-dom';
+import { feedPosts } from '../../data/social';
 import { socialService } from '../../services/socialService';
 import { useApiData } from '../../hooks/useApiData';
+import { useSuggestions } from '../../hooks/useSuggestions';
 
 const ONBOARDED_KEY = 'isaude_onboarded';
 
@@ -70,6 +72,7 @@ export function Home() {
 }
 
 function OnboardingModal({ onClose }: { onClose: () => void }) {
+    const { suggestions, followed, follow } = useSuggestions();
     return (
         <div className="fixed inset-0 z-40 bg-black/40 flex items-center justify-center p-4">
             <div className="bg-white rounded-2xl shadow-xl w-full max-w-md p-6 relative">
@@ -90,18 +93,27 @@ function OnboardingModal({ onClose }: { onClose: () => void }) {
                 </div>
 
                 <div className="flex flex-col gap-1 max-h-64 overflow-y-auto">
+                    {suggestions.length === 0 && (
+                        <p className="text-xs text-gray-400 py-2">Nenhuma sugestão no momento.</p>
+                    )}
                     {suggestions.map((p) => (
-                        <div key={p.handle} className="flex items-center gap-3 py-2">
-                            <Avatar name={p.name} size={40} />
-                            <div className="flex-1 min-w-0">
-                                <p className="text-sm font-semibold text-gray-900 truncate flex items-center gap-1">
-                                    {p.name}
-                                    {p.verified && <span className="text-[#407BFF] text-xs">✔</span>}
-                                </p>
-                                <p className="text-xs text-gray-400 truncate">{p.role}</p>
-                            </div>
-                            <button className="text-xs font-bold text-white bg-[#407BFF] hover:bg-blue-600 px-5 py-2 rounded-full transition-colors">
-                                Seguir
+                        <div key={p.id} className="flex items-center gap-3 py-2">
+                            <Link to={`/perfil/${p.handle.replace(/^@/, '')}`} className="flex items-center gap-3 flex-1 min-w-0">
+                                <Avatar name={p.name} size={40} />
+                                <div className="flex-1 min-w-0">
+                                    <p className="text-sm font-semibold text-gray-900 truncate flex items-center gap-1">
+                                        {p.name}
+                                        {p.verified && <span className="text-[#407BFF] text-xs">✔</span>}
+                                    </p>
+                                    <p className="text-xs text-gray-400 truncate">{p.role}</p>
+                                </div>
+                            </Link>
+                            <button
+                                onClick={() => follow(p.id)}
+                                disabled={followed.has(p.id)}
+                                className="text-xs font-bold px-5 py-2 rounded-full transition-colors disabled:bg-gray-100 disabled:text-gray-400 text-white bg-[#407BFF] hover:bg-blue-600"
+                            >
+                                {followed.has(p.id) ? 'Seguindo' : 'Seguir'}
                             </button>
                         </div>
                     ))}

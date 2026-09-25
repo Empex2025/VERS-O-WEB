@@ -4,13 +4,38 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
-import { appointments } from '../../data/health';
 import { teleconsultaService } from '../../services/teleconsultaService';
+import { profileService } from '../../services/profileService';
+import { useApiData } from '../../hooks/useApiData';
+
+interface Appt { professional: string; role: string; channel: string; date: string; type: string; price: string }
+interface RawAppt { id_usuario_profissional?: number; data_hora_inicio?: string; tipo_consulta?: string; valor?: number | string; modalidade?: string }
+
+const APPT_EMPTY: Appt = { professional: 'Profissional', role: '', channel: 'Teleconsulta', date: '', type: 'Consulta', price: '' };
+
+/** Agendamento real por id + profissional enriquecido. */
+async function fetchAppt(id?: string): Promise<Appt> {
+    if (!id) return APPT_EMPTY;
+    const raw = await teleconsultaService.agendamentos.get<RawAppt | RawAppt[]>(id);
+    const a = Array.isArray(raw) ? raw[0] : raw;
+    if (!a) return APPT_EMPTY;
+    let nome = a.id_usuario_profissional ? `Profissional ${a.id_usuario_profissional}` : 'Profissional';
+    if (a.id_usuario_profissional) {
+        try { const u = await profileService.getPublicUser<{ nome?: string }>(a.id_usuario_profissional); if (u?.nome) nome = u.nome; } catch { /* fallback */ }
+    }
+    const tipo = a.tipo_consulta || 'Consulta';
+    const presencial = /presenc/i.test(a.modalidade || '') || /presenc/i.test(tipo);
+    const date = a.data_hora_inicio
+        ? new Date(a.data_hora_inicio).toLocaleDateString('pt-BR', { weekday: 'long', day: 'numeric', month: 'long' }).replace(/^\w/, (c) => c.toUpperCase())
+        : '';
+    const price = a.valor != null ? `R$ ${Number(a.valor).toFixed(2).replace('.', ',')}` : '';
+    return { professional: nome, role: 'Profissional', channel: presencial ? 'Presencial' : 'Teleconsulta', date, type: tipo, price };
+}
 
 export function AgendamentoDetalhe() {
     const { id } = useParams();
     const navigate = useNavigate();
-    const appt = appointments.find((a) => a.id === id) ?? appointments[0];
+    const { data: appt } = useApiData<Appt>(() => fetchAppt(id), APPT_EMPTY, [id]);
     const [menuOpen, setMenuOpen] = useState(false);
     const [confirmCancel, setConfirmCancel] = useState(false);
     const isTele = appt.channel === 'Teleconsulta';

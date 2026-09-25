@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { X, Search, Link2, Mail, MessageCircle, Check } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
-import { suggestions } from '../../data/social';
+import { useSuggestions } from '../../hooks/useSuggestions';
 
 // Alvos de compartilhamento. Ícones de marca são representados por glifos/ícones
 // neutros para evitar dependência de brand icons.
@@ -17,6 +17,7 @@ const TARGETS: { label: string; icon?: React.ReactNode; glyph?: string; bg: stri
 
 export function ShareModal({ open, onClose }: { open: boolean; onClose: () => void }) {
     const [copied, setCopied] = useState(false);
+    const { suggestions } = useSuggestions();
     if (!open) return null;
 
     const handleTarget = (label: string) => {
@@ -53,8 +54,11 @@ export function ShareModal({ open, onClose }: { open: boolean; onClose: () => vo
 
                 {/* Contatos */}
                 <div className="grid grid-cols-4 gap-3 px-4 pb-4 max-h-56 overflow-y-auto">
-                    {[...suggestions, ...suggestions].map((p, i) => (
-                        <button key={i} className="flex flex-col items-center gap-1.5">
+                    {suggestions.length === 0 && (
+                        <p className="col-span-4 text-[11px] text-white/50 text-center py-3">Nenhum contato para exibir.</p>
+                    )}
+                    {suggestions.map((p) => (
+                        <button key={p.id} className="flex flex-col items-center gap-1.5">
                             <Avatar name={p.name} size={56} />
                             <span className="text-[11px] text-white/70 truncate w-full text-center">{p.name.split(' ')[0]}</span>
                         </button>

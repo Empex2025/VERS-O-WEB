@@ -3,7 +3,6 @@ import { Users, Globe, ChevronDown, ChevronLeft, X, Camera, Image as ImageIcon, 
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { Avatar } from '../../components/ui/Avatar';
-import { currentUser } from '../../data/social';
 import { socialService } from '../../services/socialService';
 import { useAuthStore } from '../../store/useAuthStore';
 
@@ -24,6 +23,7 @@ export function CriarPost() {
     const [pessoas, setPessoas] = useState(0);
     const [local, setLocal] = useState<string | null>(null);
     const userId = useAuthStore((s) => s.user?.id);
+    const meName = useAuthStore((s) => s.user?.nome) || 'Você';
     const fileRef = useRef<HTMLInputElement>(null);
 
     const addPhotos = (files: FileList | null) => {
@@ -66,7 +66,7 @@ export function CriarPost() {
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-lg p-5">
                     {/* Autor + audiência */}
                     <div className="flex items-center gap-3">
-                        <Avatar name={currentUser.name} size={40} />
+                        <Avatar name={meName} size={40} />
                         <div className="relative">
                             <button onClick={() => setAudOpen((v) => !v)} className="flex items-center gap-2 text-sm font-bold text-gray-800 bg-[#01AEA4]/10 text-[#01AEA4] px-3 py-1.5 rounded-full">
                                 <aud.icon size={15} /> {aud.label} <ChevronDown size={14} />

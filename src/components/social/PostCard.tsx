@@ -2,7 +2,7 @@ import { useState } from 'react';
 import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ImageIcon } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import { ShareModal } from './ShareModal';
-import { currentUser, type Post } from '../../data/social';
+import { type Post } from '../../data/social';
 import { socialService } from '../../services/socialService';
 import { useAuthStore } from '../../store/useAuthStore';
 
@@ -18,6 +18,7 @@ export function PostCard({ post }: { post: Post }) {
     const [comments, setComments] = useState<Comment[]>([]);
     const [draft, setDraft] = useState('');
     const userId = useAuthStore((s) => s.user?.id);
+    const meName = useAuthStore((s) => s.user?.nome) || 'Você';
     const postId = Number(post.id);
 
     const toggleLike = () => {
@@ -31,7 +32,7 @@ export function PostCard({ post }: { post: Post }) {
     const addComment = () => {
         const text = draft.trim();
         if (!text) return;
-        setComments((prev) => [...prev, { author: currentUser.name, text }]);
+        setComments((prev) => [...prev, { author: meName, text }]);
         setDraft('');
         if (Number.isFinite(postId) && userId) {
             socialService.comment(postId, userId, text).catch(() => {});
@@ -111,9 +112,9 @@ export function PostCard({ post }: { post: Post }) {
 
                     {/* Campo de novo comentário */}
                     <div className="flex items-start gap-2">
-                        <Avatar name={currentUser.name} size={32} />
+                        <Avatar name={meName} size={32} />
                         <div className="flex-1">
-                            <p className="text-xs font-bold text-gray-900 mb-1">{currentUser.name}</p>
+                            <p className="text-xs font-bold text-gray-900 mb-1">{meName}</p>
                             <div className="flex items-center gap-2 bg-[#F3F4F6] rounded-full pl-3 pr-1 py-1">
                                 <input
                                     value={draft}

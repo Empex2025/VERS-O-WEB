@@ -7,7 +7,6 @@ import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 import { SchedulePicker } from '../../components/health/SchedulePicker';
-import { suggestions } from '../../data/social';
 import { professional as pro } from '../../data/health';
 import { useNavigate, useParams } from 'react-router-dom';
 import { teleconsultaService } from '../../services/teleconsultaService';
@@ -199,14 +198,7 @@ export function PerfilProfissional() {
 
                 {/* Instituições vinculadas */}
                 <Section title="Instituições Vinculadas" action="Ver todas as instituições">
-                    <div className="flex gap-4">
-                        {suggestions.slice(0, 4).map((p) => (
-                            <div key={p.handle} className="flex flex-col items-center gap-1 w-16">
-                                <Avatar name={p.name} size={48} />
-                                <span className="text-[10px] text-gray-500 text-center truncate w-full">{p.name.split(' ')[0]}</span>
-                            </div>
-                        ))}
-                    </div>
+                    <p className="text-xs text-gray-400">Nenhuma instituição vinculada.</p>
                 </Section>
 
                 {/* Locais de atendimento */}
@@ -232,6 +224,9 @@ export function PerfilProfissional() {
                 open={picking}
                 onClose={() => setPicking(false)}
                 onConfirm={(day, time) => agendar(day, time)}
+                professionalId={id ? Number(id) : undefined}
+                professionalName={dp.name}
+                professionalRole={dp.crm}
             />
         </AppShell>
     );
