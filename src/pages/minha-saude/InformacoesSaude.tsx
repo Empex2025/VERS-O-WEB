@@ -13,10 +13,10 @@ export function InformacoesSaude() {
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6">
                     {/* Profissional responsável */}
                     <div className="flex items-center gap-3 pb-5 border-b border-gray-100">
-                        <Avatar name="Dra. Maria Glenda" size={44} />
+                        <Avatar name="Profissional" size={44} />
                         <div className="flex-1">
                             <p className="text-sm font-bold text-gray-900 flex items-center gap-1">
-                                Dra. Maria Glenda <BadgeCheck size={14} className="text-emerald-500" />
+                                Profissional <BadgeCheck size={14} className="text-emerald-500" />
                             </p>
                             <p className="text-xs text-gray-400">Clínico Geral</p>
                         </div>

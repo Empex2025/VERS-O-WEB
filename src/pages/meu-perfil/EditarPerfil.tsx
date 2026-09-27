@@ -33,8 +33,7 @@ export function EditarPerfil() {
     const [linksOpen, setLinksOpen] = useState(false);
     const [showBadge, setShowBadge] = useState(true);
     const [allowBooking, setAllowBooking] = useState(false);
-    const [links, setLinks] = useState([
-        { label: 'Dra. Maria Glenda', url: 'https://linktr.ee/dra.glenda' },
+    const [links, setLinks] = useState<{ label: string; url: string }[]>([
     ]);
 
     return (

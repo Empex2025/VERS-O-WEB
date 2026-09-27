@@ -160,7 +160,7 @@ export function AgendamentoDetalhe() {
                         <button onClick={() => setConfirmCancel(false)} className="absolute top-4 right-4 text-gray-400"><X size={18} /></button>
                         <h3 className="text-base font-bold text-gray-900 mt-2">Você tem certeza que deseja cancelar o atendimento?</h3>
                         <p className="text-sm text-gray-500 mt-2">
-                            O cancelamento com a Dra. Maria Glenda até 24 horas antes será reembolsado. Após esse período, será cobrada uma taxa de 15% do valor do atendimento.
+                            O cancelamento com {appt.professional} até 24 horas antes será reembolsado. Após esse período, será cobrada uma taxa de 15% do valor do atendimento.
                         </p>
                         <div className="grid grid-cols-2 gap-3 mt-6">
                             <button onClick={() => setConfirmCancel(false)} className="bg-rose-50 text-rose-500 font-bold text-sm py-3 rounded-full hover:bg-rose-100 transition-colors">Voltar</button>

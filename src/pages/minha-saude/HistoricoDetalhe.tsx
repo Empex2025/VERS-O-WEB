@@ -23,9 +23,9 @@ export function HistoricoDetalhe() {
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-4">
                         <div className="flex items-center justify-between">
                             <div className="flex items-center gap-3">
-                                <Avatar name="Dra. Maria Glenda" size={40} />
+                                <Avatar name="Profissional" size={40} />
                                 <div>
-                                    <p className="text-sm font-bold text-gray-900 flex items-center gap-1">Dra. Maria Glenda <BadgeCheck size={14} className="text-[#407BFF]" /></p>
+                                    <p className="text-sm font-bold text-gray-900 flex items-center gap-1">Profissional <BadgeCheck size={14} className="text-[#407BFF]" /></p>
                                     <p className="text-xs text-gray-400 flex items-center gap-1"><Stethoscope size={11} /> Clínico Geral</p>
                                 </div>
                             </div>

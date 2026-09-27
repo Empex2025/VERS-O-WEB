@@ -19,9 +19,9 @@ export function PreConsulta() {
 
                     {/* Profissional */}
                     <div className="flex items-center gap-3 pb-5 border-b border-gray-100">
-                        <Avatar name="Dra. Maria Glenda" size={44} />
+                        <Avatar name="Profissional" size={44} />
                         <div className="flex-1">
-                            <p className="text-sm font-bold text-gray-900 flex items-center gap-1">Dra. Maria Glenda <BadgeCheck size={14} className="text-emerald-500" /></p>
+                            <p className="text-sm font-bold text-gray-900 flex items-center gap-1">Profissional <BadgeCheck size={14} className="text-emerald-500" /></p>
                             <p className="text-xs text-gray-400">Clínico Geral</p>
                         </div>
                         <span className="text-xs font-semibold text-emerald-600 flex items-center gap-1">Consulta Geral <span className="w-1.5 h-1.5 rounded-full bg-emerald-500" /></span>

@@ -221,12 +221,12 @@ export function PerfilPaciente() {
     return (
         <ProfileView
             profile={{
-                name: 'Luana Paiva',
-                handle: '@luana.paiva',
-                verified: true,
+                name: 'Usuário',
+                handle: '@usuario',
+                verified: false,
                 professional: false,
-                bio: 'Apaixonada por bem-estar e vida saudável. 🌱 Compartilhando minha jornada no iSaúde.',
-                stats: { posts: '82', followers: '1.298', following: '453' },
+                bio: '',
+                stats: { posts: '0', followers: '0', following: '0' },
             }}
         />
     );

@@ -8,6 +8,7 @@ export function ConfirmacaoAgendamento() {
     const navigate = useNavigate();
     const location = useLocation();
     const title: string = location.state?.title ?? 'Seu atendimento foi agendado com sucesso.';
+    const profNome: string = location.state?.profNome ?? 'Profissional';
 
     return (
         <AppShell>
@@ -23,9 +24,9 @@ export function ConfirmacaoAgendamento() {
                     {/* Card do atendimento */}
                     <div className="mt-5 text-left border border-gray-100 rounded-xl p-4">
                         <div className="flex items-center gap-3">
-                            <Avatar name="Dra. Maria Glenda" size={40} />
+                            <Avatar name={profNome} size={40} />
                             <div>
-                                <p className="text-sm font-bold text-gray-900 flex items-center gap-1">Dra. Maria Glenda <BadgeCheck size={13} className="text-emerald-500" /></p>
+                                <p className="text-sm font-bold text-gray-900 flex items-center gap-1">{profNome} <BadgeCheck size={13} className="text-emerald-500" /></p>
                                 <p className="text-xs text-gray-400">Consulta Geral</p>
                             </div>
                         </div>

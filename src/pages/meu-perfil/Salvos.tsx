@@ -1,9 +1,8 @@
 import { useState } from 'react';
-import { MoreHorizontal, BadgeCheck, CalendarPlus, ImageIcon } from 'lucide-react';
+import { MoreHorizontal, ImageIcon } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { PostCard } from '../../components/social/PostCard';
-import { Avatar } from '../../components/ui/Avatar';
 import type { Post } from '../../data/social';
 import { socialService, toPost, type RawPost, type RawUser } from '../../services/socialService';
 import { profileService } from '../../services/profileService';
@@ -61,20 +60,7 @@ export function Salvos() {
                 )}
 
                 {tab === 'Perfis' && (
-                    <div className="flex flex-col gap-2">
-                        {Array.from({ length: 3 }).map((_, i) => (
-                            <div key={i} className="flex items-center gap-3 bg-white border border-gray-100 rounded-xl p-3">
-                                <Avatar name="Dra. Maria Glenda" size={44} />
-                                <div className="flex-1">
-                                    <p className="text-sm font-bold text-gray-900 flex items-center gap-1">Dra. Maria Glenda <BadgeCheck size={13} className="text-emerald-500" /></p>
-                                    <p className="text-xs text-gray-400">Clínico Geral</p>
-                                </div>
-                                <button className="flex items-center gap-1 text-xs font-bold text-emerald-600 bg-emerald-50 px-3 py-1.5 rounded-full">
-                                    <CalendarPlus size={13} /> Agendar Hoje
-                                </button>
-                            </div>
-                        ))}
-                    </div>
+                    <p className="text-sm text-gray-400 py-10 text-center">Nenhum perfil salvo ainda.</p>
                 )}
 
                 {tab === 'Pulses' && (
