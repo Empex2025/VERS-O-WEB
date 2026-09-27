@@ -1,11 +1,12 @@
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 
 export function ComentarioPaciente() {
     const navigate = useNavigate();
+    const pacienteNome = (useLocation().state as { pacienteNome?: string } | null)?.pacienteNome || 'Paciente';
     const [texto, setTexto] = useState('');
 
     return (
@@ -15,9 +16,9 @@ export function ComentarioPaciente() {
 
                 <div className="flex-1 flex flex-col gap-4">
                     <div className="flex items-center gap-3 bg-white rounded-xl border border-gray-100 px-4 py-3">
-                        <Avatar name="Carlos Magno de Souza" size={40} />
+                        <Avatar name={pacienteNome} size={40} />
                         <div>
-                            <p className="text-sm font-bold text-gray-900">Carlos Magno de Souza</p>
+                            <p className="text-sm font-bold text-gray-900">{pacienteNome}</p>
                             <p className="text-xs text-gray-400">@carlosmagno</p>
                         </div>
                     </div>

@@ -40,7 +40,7 @@ export function Pagamento() {
     const st = (location.state ?? {}) as { title?: string; consultaId?: number; valor?: number; profNome?: string; profId?: number };
     const successTitle = st.title ?? 'Seu atendimento foi agendado com sucesso.';
     const valor = st.valor ?? 50.9;
-    const profNome = st.profNome ?? 'Dra. Maria Glenda';
+    const profNome = st.profNome ?? 'Profissional';
     const [selectedCard, setSelectedCard] = useState<CardItem | null>(null);
 
     const goPay = async () => {

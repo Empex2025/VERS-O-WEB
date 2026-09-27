@@ -4,16 +4,37 @@ import { MoreHorizontal, Info, Clock, Plus, CalendarDays, Settings2, Check, X, S
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
+import { teleconsultaService } from '../../services/teleconsultaService';
+import { profileService } from '../../services/profileService';
+import { useAuthStore } from '../../store/useAuthStore';
+import { useApiData } from '../../hooks/useApiData';
 
 const DAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
-const ATEND_HOJE = [
-    { nome: 'Carlos Magno', tipo: 'Consulta Geral', hora: '9:30 às 10:00', badge: 'Inicia em 3 min' },
-    { nome: 'Carlos Magno', tipo: 'Consulta Geral', hora: '10:30 às 11:00' },
-    { nome: 'Carlos Magno', tipo: 'Consulta Geral', hora: '16:30 às 17:00' },
-];
+
+interface HojeAtend { nome: string; tipo: string; hora: string }
+interface RawAppt { id_usuario_paciente?: number; data_hora_inicio?: string; data_hora_fim?: string; tipo_consulta?: string }
+
+/** Atendimentos de HOJE do profissional logado (paciente enriquecido). */
+async function fetchHoje(): Promise<HojeAtend[]> {
+    const raw = await teleconsultaService.agendamentos.list<{ results: RawAppt[] } | RawAppt[]>();
+    const list = Array.isArray(raw) ? raw : raw?.results ?? [];
+    const hoje = new Date().toDateString();
+    const doDia = list.filter((a) => a.data_hora_inicio && new Date(a.data_hora_inicio).toDateString() === hoje);
+    const ids = [...new Set(doDia.map((a) => a.id_usuario_paciente).filter(Boolean))] as number[];
+    const byId = new Map<number, { nome?: string }>();
+    await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<{ nome?: string }>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
+    const hhmm = (s?: string) => (s ? new Date(s).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
+    return doDia.map((a) => ({
+        nome: (a.id_usuario_paciente ? byId.get(a.id_usuario_paciente)?.nome : '') || 'Paciente',
+        tipo: a.tipo_consulta || 'Consulta',
+        hora: `${hhmm(a.data_hora_inicio)} às ${hhmm(a.data_hora_fim)}`,
+    }));
+}
 
 export function DiasHorariosAtendimento() {
     const navigate = useNavigate();
+    const meName = useAuthStore((s) => s.user?.nome) || 'Profissional';
+    const { data: ATEND_HOJE } = useApiData<HojeAtend[]>(fetchHoje, [], []);
     const [selected, setSelected] = useState<Set<number>>(new Set([1, 2, 3, 4, 5]));
     const [active, setActive] = useState(1);
     const [ranges, setRanges] = useState([{ de: '08:00', ate: '12:00' }, { de: '14:00', ate: '18:00' }]);
@@ -89,7 +110,7 @@ export function DiasHorariosAtendimento() {
                     {/* Coluna direita — painel do profissional */}
                     <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 flex flex-col gap-4 h-fit">
                         <div>
-                            <p className="text-base font-bold text-gray-900">Olá, Dra. Maria Glenda.</p>
+                            <p className="text-base font-bold text-gray-900">Olá, {meName}.</p>
                             <p className="text-xs text-gray-500 mt-1">Vinculado a 2 Instituições</p>
                             <button className="text-xs font-semibold text-[#407BFF] underline">Ver vínculos ›</button>
                         </div>
@@ -109,7 +130,6 @@ export function DiasHorariosAtendimento() {
                         <div className="flex flex-col gap-2">
                             {ATEND_HOJE.map((a, i) => (
                                 <div key={i} className="relative border border-gray-100 rounded-xl px-3 py-2.5">
-                                    {a.badge && <span className="absolute -top-2 right-3 bg-emerald-500 text-white text-[9px] font-bold px-2 py-0.5 rounded-full">{a.badge}</span>}
                                     <div className="flex items-center justify-between">
                                         <div><p className="text-xs font-bold text-gray-900">{a.nome}</p><p className="text-[11px] text-gray-400">{a.tipo}</p></div>
                                         <span className="text-[11px] text-gray-500"><span className="text-gray-400">Hoje</span> {a.hora}</span>

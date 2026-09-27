@@ -1,5 +1,5 @@
 import { MoreHorizontal, MapPin, MessageCircle, FileText, Pill, FlaskConical, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
@@ -13,6 +13,7 @@ const ACOES = [
 
 export function PosAtendimento() {
     const navigate = useNavigate();
+    const pacienteNome = (useLocation().state as { pacienteNome?: string } | null)?.pacienteNome || 'Paciente';
     return (
         <AppShell rightRail={null}>
             <div className="max-w-4xl mx-auto">
@@ -34,9 +35,9 @@ export function PosAtendimento() {
 
                     {/* Paciente */}
                     <div className="flex items-center gap-3">
-                        <Avatar name="Carlos Magno de Souza" size={48} />
+                        <Avatar name={pacienteNome} size={48} />
                         <div>
-                            <p className="text-base font-bold text-gray-900">Carlos Magno de Souza</p>
+                            <p className="text-base font-bold text-gray-900">{pacienteNome}</p>
                             <p className="text-xs text-gray-400">@carlosmagno</p>
                         </div>
                     </div>

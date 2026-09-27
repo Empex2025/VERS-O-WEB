@@ -4,20 +4,38 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
+import { teleconsultaService } from '../../services/teleconsultaService';
+import { profileService } from '../../services/profileService';
+import { useApiData } from '../../hooks/useApiData';
 
 const WEEK = [
     { d: 'Sex', n: 25, dot: false }, { d: 'Sab', n: 26, dot: false }, { d: 'Dom', n: 27, dot: false },
     { d: 'Seg', n: 28, dot: false }, { d: 'Ter', n: 29, dot: true }, { d: 'Qua', n: 30, dot: true }, { d: 'Qui', n: 31, dot: true },
 ];
-const ATEND = [
-    { nome: 'Carlos Magno de Souza', tipo: 'Consulta Geral', hora: '8:30 às 9:00' },
-    { nome: 'Carlos Magno de Souza', tipo: 'Consulta Geral', hora: '9:30 às 10:00' },
-    { nome: 'Carlos Magno de Souza', tipo: 'Consulta Geral', hora: '16:30 às 17:00' },
-];
+
+interface Atend { nome: string; tipo: string; hora: string }
+interface RawAppt { id_usuario_paciente?: number; data_hora_inicio?: string; data_hora_fim?: string; tipo_consulta?: string }
+
+/** Próximos atendimentos reais do profissional (com paciente enriquecido). */
+async function fetchAtendimentos(): Promise<Atend[]> {
+    const raw = await teleconsultaService.agendamentos.list<{ results: RawAppt[] } | RawAppt[]>();
+    const list = Array.isArray(raw) ? raw : raw?.results ?? [];
+    const futuros = list.filter((a) => a.data_hora_inicio && new Date(a.data_hora_inicio) >= new Date(Date.now() - 864e5)).slice(0, 8);
+    const ids = [...new Set(futuros.map((a) => a.id_usuario_paciente).filter(Boolean))] as number[];
+    const byId = new Map<number, { nome?: string }>();
+    await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<{ nome?: string }>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
+    const hhmm = (s?: string) => (s ? new Date(s).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
+    return futuros.map((a) => ({
+        nome: (a.id_usuario_paciente ? byId.get(a.id_usuario_paciente)?.nome : '') || 'Paciente',
+        tipo: a.tipo_consulta || 'Consulta',
+        hora: `${hhmm(a.data_hora_inicio)} às ${hhmm(a.data_hora_fim)}`,
+    }));
+}
 
 export function ClinicaVinculada() {
     const navigate = useNavigate();
     const [sel, setSel] = useState(28);
+    const { data: ATEND } = useApiData<Atend[]>(fetchAtendimentos, [], []);
     const [menu, setMenu] = useState(false);
     const [confirm, setConfirm] = useState(false);
 
@@ -71,8 +89,10 @@ export function ClinicaVinculada() {
                             <button className="w-8 h-8 rounded-full bg-[#407BFF] text-white flex items-center justify-center shrink-0"><ChevronRight size={16} /></button>
                         </div>
 
-                        <p className="text-xs text-gray-400 text-right mt-4 mb-2">Segunda, {sel} de Abril</p>
                         <div className="flex flex-col gap-2">
+                            {ATEND.length === 0 && (
+                                <p className="text-sm text-gray-400 py-6 text-center">Nenhum atendimento agendado.</p>
+                            )}
                             {ATEND.map((a, i) => (
                                 <div key={i} className="flex items-center justify-between bg-[#F9FAFB] rounded-xl px-4 py-3">
                                     <div>

@@ -44,7 +44,7 @@ export function MeuPerfil() {
     const isPro = user?.tipo_usuario === 'profissional' || user?.tipo_usuario === 'clinica';
 
     const me = {
-        name: user?.nome ?? 'Carlos Magno',
+        name: user?.nome ?? 'Usuário',
         handle: user?.username ? `@${user.username}` : user?.email ? `@${user.email.split('@')[0]}` : '@carlos.magno',
         role: roleLabel(user?.tipo_usuario),
         bio: user?.descricao_bio || '',

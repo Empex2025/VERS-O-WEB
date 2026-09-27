@@ -240,10 +240,10 @@ export function PerfilPrivado() {
                 <div className="h-40 rounded-2xl bg-gradient-to-r from-gray-300 to-gray-400" />
                 <div className="px-6 -mt-12">
                     <div className="p-1 bg-white rounded-full w-fit">
-                        <Avatar name="Luana Paiva" size={96} />
+                        <Avatar name="Perfil" size={96} />
                     </div>
-                    <h1 className="text-xl font-bold text-gray-900 mt-3">Luana Paiva</h1>
-                    <p className="text-sm text-gray-400">@luana.paiva</p>
+                    <h1 className="text-xl font-bold text-gray-900 mt-3">Perfil Privado</h1>
+                    
                 </div>
                 <div className="flex flex-col items-center text-center py-20 text-gray-500">
                     <div className="w-16 h-16 rounded-full bg-gray-100 flex items-center justify-center mb-4">

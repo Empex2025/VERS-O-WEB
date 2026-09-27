@@ -1,11 +1,12 @@
 import { MoreHorizontal, MapPin, CalendarDays, Clock } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 
 export function ResumoAtendimento() {
     const navigate = useNavigate();
+    const pacienteNome = (useLocation().state as { pacienteNome?: string } | null)?.pacienteNome || 'Paciente';
     return (
         <AppShell rightRail={null}>
             <div className="max-w-4xl mx-auto">
@@ -18,10 +19,10 @@ export function ResumoAtendimento() {
                 <div className="bg-white rounded-2xl border border-gray-100 shadow-sm p-5 sm:p-6 flex flex-col gap-3">
                     {/* Paciente */}
                     <div className="flex items-center gap-3 bg-[#F9FAFB] rounded-xl px-4 py-3">
-                        <Avatar name="Carlos Magno de Souza" size={40} />
+                        <Avatar name={pacienteNome} size={40} />
                         <div>
                             <p className="text-[11px] text-gray-400">Paciente</p>
-                            <p className="text-sm font-bold text-gray-900">Carlos Magno de Souza</p>
+                            <p className="text-sm font-bold text-gray-900">{pacienteNome}</p>
                         </div>
                     </div>
 

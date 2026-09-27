@@ -1,7 +1,7 @@
 import { Avatar } from '../../components/ui/Avatar';
 
 /** Card de paciente no topo das telas de Solicitação (Prescrição, Atestado, Exames). */
-export function PacienteCard({ nome = 'Carlos Magno de Souza', handle = '@carlos.magno' }: { nome?: string; handle?: string }) {
+export function PacienteCard({ nome = 'Paciente', handle = '@paciente' }: { nome?: string; handle?: string }) {
     return (
         <div className="flex items-center gap-3 bg-[#F9FAFB] rounded-xl px-4 py-3">
             <Avatar name={nome} size={44} />

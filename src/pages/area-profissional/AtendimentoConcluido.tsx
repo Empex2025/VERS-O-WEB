@@ -1,10 +1,11 @@
 import { Video, Star, Headset, RotateCcw, ChevronRight } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 
 export function AtendimentoConcluido() {
     const navigate = useNavigate();
+    const st = (useLocation().state as { pacienteNome?: string } | null) ?? undefined;
     return (
         <AppShell rightRail={null}>
             <div className="max-w-5xl mx-auto">
@@ -37,7 +38,7 @@ export function AtendimentoConcluido() {
                             </div>
 
                             <button
-                                onClick={() => navigate('/area-profissional/atendimento/pos')}
+                                onClick={() => navigate('/area-profissional/atendimento/pos', { state: st })}
                                 className="w-full bg-[#407BFF] hover:bg-blue-600 text-white text-sm font-bold px-5 py-3.5 rounded-full flex items-center justify-between transition-colors"
                             >
                                 <span className="flex items-center gap-2"><Video size={16} /> Pós Atendimento</span>
@@ -48,7 +49,7 @@ export function AtendimentoConcluido() {
 
                     {/* Pills */}
                     <div className="grid sm:grid-cols-3 gap-3 mt-5">
-                        <Pill icon={<Star size={16} className="text-[#407BFF]" />} label="Avaliar" onClick={() => navigate('/area-profissional/atendimento/resumo')} />
+                        <Pill icon={<Star size={16} className="text-[#407BFF]" />} label="Avaliar" onClick={() => navigate('/area-profissional/atendimento/resumo', { state: st })} />
                         <Pill icon={<Headset size={16} className="text-[#407BFF]" />} label="Ajuda e Suporte" onClick={() => navigate('/area-profissional/financeiro')} />
                         <Pill icon={<RotateCcw size={16} className="text-rose-500" />} label="Retomar Atendimento" danger onClick={() => navigate('/area-profissional/agenda')} />
                     </div>

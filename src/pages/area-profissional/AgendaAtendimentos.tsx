@@ -3,24 +3,42 @@ import { ChevronLeft, ChevronRight, ChevronDown } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
+import { teleconsultaService } from '../../services/teleconsultaService';
+import { profileService } from '../../services/profileService';
+import { useApiData } from '../../hooks/useApiData';
 
 interface Atendimento { nome: string; tipo: string; inicio: string; fim: string }
+interface RawAppt { id_usuario_paciente?: number; data_hora_inicio?: string; data_hora_fim?: string; tipo_consulta?: string }
 
 const WEEKDAYS = ['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sab'];
 const MESES = ['Janeiro', 'Fevereiro', 'Março', 'Abril', 'Maio', 'Junho', 'Julho', 'Agosto', 'Setembro', 'Outubro', 'Novembro', 'Dezembro'];
-
-/** Dias do mês (visualizado) que possuem atendimentos — dá os "pontinhos" do calendário. */
-const DIAS_COM_ATENDIMENTO = new Set([1, 2, 3, 4, 7, 8, 10, 11, 13, 14, 16, 17, 18, 21, 22, 23, 24, 25, 28, 29, 30, 31]);
 
 function isoKey(y: number, m: number, d: number) {
     return `${y}-${String(m + 1).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
 
-const ATEND_DIA: Atendimento[] = [
-    { nome: 'Carlos Magno de Souza', tipo: 'Consulta Geral', inicio: '8:30', fim: '9:00' },
-    { nome: 'Carlos Magno de Souza', tipo: 'Consulta Geral', inicio: '9:30', fim: '10:00' },
-    { nome: 'Carlos Magno de Souza', tipo: 'Consulta Geral', inicio: '16:30', fim: '17:00' },
-];
+/** Agendamentos reais do profissional logado, agrupados por dia (com paciente enriquecido). */
+async function fetchAgenda(): Promise<Record<string, Atendimento[]>> {
+    const raw = await teleconsultaService.agendamentos.list<{ results: RawAppt[] } | RawAppt[]>();
+    const list = Array.isArray(raw) ? raw : raw?.results ?? [];
+    const ids = [...new Set(list.map((a) => a.id_usuario_paciente).filter(Boolean))] as number[];
+    const byId = new Map<number, { nome?: string }>();
+    await Promise.all(ids.map(async (id) => { try { const u = await profileService.getPublicUser<{ nome?: string }>(id); if (u) byId.set(id, u); } catch { /* fallback */ } }));
+    const hhmm = (s?: string) => (s ? new Date(s).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : '');
+    const map: Record<string, Atendimento[]> = {};
+    for (const a of list) {
+        if (!a.data_hora_inicio) continue;
+        const d = new Date(a.data_hora_inicio);
+        const key = isoKey(d.getFullYear(), d.getMonth(), d.getDate());
+        (map[key] ??= []).push({
+            nome: (a.id_usuario_paciente ? byId.get(a.id_usuario_paciente)?.nome : '') || 'Paciente',
+            tipo: a.tipo_consulta || 'Consulta',
+            inicio: hhmm(a.data_hora_inicio),
+            fim: hhmm(a.data_hora_fim),
+        });
+    }
+    return map;
+}
 
 export function AgendaAtendimentos() {
     const navigate = useNavigate();
@@ -28,10 +46,17 @@ export function AgendaAtendimentos() {
     const [view, setView] = useState({ y: now.getFullYear(), m: now.getMonth() });
     const [selected, setSelected] = useState(isoKey(now.getFullYear(), now.getMonth(), now.getDate()));
     const todayKey = isoKey(now.getFullYear(), now.getMonth(), now.getDate());
+    const { data: agenda } = useApiData<Record<string, Atendimento[]>>(fetchAgenda, {}, []);
 
     const monthLabel = `${MESES[view.m]}, ${view.y}`;
     const firstWeekday = new Date(view.y, view.m, 1).getDay();
     const daysInMonth = new Date(view.y, view.m + 1, 0).getDate();
+
+    // Dias do mês visualizado que têm atendimento (pontinhos do calendário).
+    const diasComAtendimento = useMemo(() => {
+        const prefix = `${view.y}-${String(view.m + 1).padStart(2, '0')}-`;
+        return new Set(Object.keys(agenda).filter((k) => k.startsWith(prefix)).map((k) => Number(k.slice(-2))));
+    }, [agenda, view.y, view.m]);
 
     const move = (delta: number) => setView((v) => {
         const d = new Date(v.y, v.m + delta, 1);
@@ -41,9 +66,7 @@ export function AgendaAtendimentos() {
     const selDate = new Date(selected + 'T00:00:00');
     const DIAS_SEM = ['Domingo', 'Segunda', 'Terça', 'Quarta', 'Quinta', 'Sexta', 'Sábado'];
     const selLabel = `${DIAS_SEM[selDate.getDay()]}, ${selDate.getDate()} de ${MESES[selDate.getMonth()]}`;
-    const selDay = selDate.getDate();
-    // Amostra: atendimentos aparecem nos dias marcados. Trocar por API depois.
-    const doDia = useMemo(() => (DIAS_COM_ATENDIMENTO.has(selDay) ? ATEND_DIA : []), [selDay]);
+    const doDia = agenda[selected] ?? [];
 
     return (
         <AppShell rightRail={null}>
@@ -81,7 +104,7 @@ export function AgendaAtendimentos() {
                                 const key = isoKey(view.y, view.m, day);
                                 const isSelected = key === selected;
                                 const isToday = key === todayKey;
-                                const hasAppt = DIAS_COM_ATENDIMENTO.has(day);
+                                const hasAppt = diasComAtendimento.has(day);
                                 return (
                                     <button key={day} onClick={() => setSelected(key)} className="flex flex-col items-center gap-1 py-0.5">
                                         <span className={`w-10 h-10 rounded-xl flex items-center justify-center text-sm font-semibold transition-colors ${
@@ -110,7 +133,7 @@ export function AgendaAtendimentos() {
                                 {doDia.map((a, i) => (
                                     <button
                                         key={i}
-                                        onClick={() => navigate('/area-profissional/atendimento/concluido')}
+                                        onClick={() => navigate('/area-profissional/atendimento/concluido', { state: { pacienteNome: a.nome } })}
                                         className="w-full flex items-center justify-between bg-[#F9FAFB] rounded-xl px-4 py-4 text-left hover:bg-gray-100 transition-colors"
                                     >
                                         <div>
