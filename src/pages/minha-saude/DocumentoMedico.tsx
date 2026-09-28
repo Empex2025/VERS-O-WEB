@@ -2,7 +2,7 @@ import { Share2, Download } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
 import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
-import { useAuthStore } from '../../store/useAuthStore';
+import { PacienteInfoGrid } from '../../components/health/PacienteInfoGrid';
 import logoImage from '../../assets/login/logo-login.png';
 
 const meds = [
@@ -14,7 +14,6 @@ const meds = [
 ];
 
 export function DocumentoMedico() {
-    const user = useAuthStore((s) => s.user) as any;
     return (
         <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-2xl mx-auto">
@@ -37,12 +36,9 @@ export function DocumentoMedico() {
                         <p className="text-[10px] text-gray-400">Válido até 00/00/0000</p>
                     </div>
 
-                    {/* Dados do paciente */}
-                    <div className="grid grid-cols-4 gap-2 mt-6 pb-4 border-b border-gray-100">
-                        <Field label="Paciente" value={user?.nome || 'Nome do Paciente'} />
-                        <Field label="CPF" value="000.000.000-00" />
-                        <Field label="Nascimento" value="00/00/0000" />
-                        <Field label="Sexo" value="Masculino" />
+                    {/* Dados do paciente (perfil real) */}
+                    <div className="mt-6 pb-4 border-b border-gray-100">
+                        <PacienteInfoGrid />
                     </div>
 
                     <h2 className="text-center text-base font-bold text-gray-900 my-6">Prescrição Médica</h2>
@@ -76,11 +72,3 @@ export function DocumentoMedico() {
     );
 }
 
-function Field({ label, value }: { label: string; value: string }) {
-    return (
-        <div>
-            <p className="text-[10px] text-gray-400">{label}</p>
-            <p className="text-xs font-bold text-gray-800 truncate">{value}</p>
-        </div>
-    );
-}

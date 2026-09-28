@@ -5,6 +5,8 @@ import { FlashsRow } from '../../components/social/FlashsRow';
 import { PostCard } from '../../components/social/PostCard';
 import { Avatar } from '../../components/ui/Avatar';
 import { socialService } from '../../services/socialService';
+import { profileService } from '../../services/profileService';
+import { useAuthStore } from '../../store/useAuthStore';
 import { useApiData } from '../../hooks/useApiData';
 import { timeAgo } from '../../lib/format';
 
@@ -20,14 +22,17 @@ const TABS = ['Principal', 'Arquivadas', 'Solicitações'] as const;
 
 interface RawNotif {
     id_notificacao: number;
+    id_usuario?: number;
     tipo_notificacao?: string;
+    origem_tipo?: string;
+    origem_id?: number;
     created_at: string;
 }
 
-function mapNotif(n: RawNotif): Notif {
+function mapNotif(n: RawNotif, actorName: string): Notif {
     const tipo = (n.tipo_notificacao || '').toLowerCase();
     let text = 'interagiu com você.';
-    let name = 'Nome de Usuário';
+    let name = actorName;
     let action: Notif['action'];
     let highlight = false;
     if (tipo.includes('curt')) text = 'curtiu sua publicação.';
@@ -38,22 +43,34 @@ function mapNotif(n: RawNotif): Notif {
     return { name, text, time: timeAgo(n.created_at), action, highlight };
 }
 
-async function fetchNotifs(): Promise<{ today: Notif[]; last7: Notif[] }> {
-    const raw = await socialService.notificacoes.list<RawNotif[] | { results: RawNotif[] }>();
-    const list = Array.isArray(raw) ? raw : raw?.results ?? [];
+async function fetchNotifs(selfId?: number): Promise<{ today: Notif[]; last7: Notif[] }> {
+    // Escopo por usuário (a rota devolve todas se não filtrar).
+    const raw = await socialService.notificacoes.list<RawNotif[] | { results: RawNotif[] }>(selfId ? { id_usuario: selfId } : undefined);
+    let list = Array.isArray(raw) ? raw : raw?.results ?? [];
+    if (selfId) list = list.filter((n) => n.id_usuario == null || Number(n.id_usuario) === selfId);
+
+    // Resolve o nome de quem originou cada notificação (origem_id) pelo diretório.
+    const actorIds = [...new Set(list.map((n) => n.origem_id).filter(Boolean))] as number[];
+    const byId = new Map<number, string>();
+    await Promise.all(actorIds.map(async (id) => {
+        try { const u = await profileService.getPublicUser<{ nome?: string }>(id); if (u?.nome) byId.set(id, u.nome); } catch { /* fallback */ }
+    }));
+
     const dayMs = 24 * 60 * 60 * 1000;
     const today: Notif[] = [];
     const last7: Notif[] = [];
     for (const n of list) {
+        const actorName = (n.origem_id != null && byId.get(n.origem_id)) || (n.origem_id != null ? `Usuário ${n.origem_id}` : 'iSaúde');
         const isToday = Date.now() - new Date(n.created_at).getTime() < dayMs;
-        (isToday ? today : last7).push(mapNotif(n));
+        (isToday ? today : last7).push(mapNotif(n, actorName));
     }
     return { today, last7 };
 }
 
 export function Notificacoes() {
     const [tab, setTab] = useState<(typeof TABS)[number]>('Principal');
-    const { data: notifs } = useApiData(fetchNotifs, { today: [] as Notif[], last7: [] as Notif[] }, []);
+    const selfId = useAuthStore((s) => s.user?.id);
+    const { data: notifs } = useApiData(() => fetchNotifs(selfId), { today: [] as Notif[], last7: [] as Notif[] }, [selfId]);
     const { data: feed } = useApiData(() => socialService.getFeed({ limit: 1 }), [], []);
 
     return (

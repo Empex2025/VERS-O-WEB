@@ -1,4 +1,6 @@
+import { useEffect } from 'react';
 import { BrowserRouter, Routes, Route, Navigate } from 'react-router-dom';
+import { authService } from './services/authService';
 import { Login } from './pages/login/Login';
 import { LoadSplash } from './pages/login/LoadSplash';
 import { Home } from './pages/home/Home';
@@ -75,6 +77,8 @@ import { HistoricoAtendimentos } from './pages/minha-saude/HistoricoAtendimentos
 import { HistoricoDetalhe } from './pages/minha-saude/HistoricoDetalhe';
 
 function App() {
+  // Sessão persistida (reload): rehidrata o perfil completo do usuário logado.
+  useEffect(() => { authService.hydrateUser(); }, []);
   return (
     <BrowserRouter>
       <Routes>

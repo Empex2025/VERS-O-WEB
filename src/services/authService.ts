@@ -28,7 +28,26 @@ export const authService = {
             body: { email, password },
         });
         useAuthStore.getState().setAuth(data.token, data.user);
+        // Hidrata o perfil completo (username, bio, cpf, nascimento…) que o login não traz.
+        authService.hydrateUser();
         return data;
+    },
+
+    /**
+     * Mescla o perfil do diretório público no store — o login devolve só
+     * id/nome/email/tipo, sem `username`/`descricao_bio`/`is_verificado`.
+     * (`GET /users/:id` devolve a lista paginada, não serve; o diretório sim.)
+     */
+    async hydrateUser(): Promise<void> {
+        const { token, user } = useAuthStore.getState();
+        if (!token || !user?.id) return;
+        try {
+            const { profileService } = await import('./profileService');
+            const full = await profileService.getPublicUser<Record<string, unknown>>(user.id);
+            if (full && typeof full === 'object') {
+                useAuthStore.getState().setAuth(token, { ...user, ...full } as AuthUser);
+            }
+        } catch { /* mantém o que já tem no store */ }
     },
 
     register(payload: RegisterPayload) {

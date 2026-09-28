@@ -43,20 +43,22 @@ export function Conversas() {
     const chat = chats[active];
     const isReal = !!chat && chat.contatoId > 0 && !!selfId;
 
-    // Carrega o histórico real ao trocar de conversa (conversa mock mantém o fallback).
+    // Carrega o histórico real ao trocar de conversa e faz polling (quase tempo-real).
     useEffect(() => {
         let alive = true;
         if (!chat || chat.contatoId < 0 || !selfId) { setMessages([]); return; }
-        (async () => {
+        const load = async () => {
             try {
                 const raw = await socialService.conversas.historico<RawMensagem[]>({ usuario_id: selfId, contato_id: chat.contatoId });
                 const list = Array.isArray(raw) ? raw : [];
                 if (alive) setMessages(list.map((m) => ({ me: m.remetente_id === selfId, text: m.mensagem })));
             } catch {
-                if (alive) setMessages([]);
+                /* mantém as mensagens atuais em caso de falha transitória */
             }
-        })();
-        return () => { alive = false; };
+        };
+        load();
+        const t = setInterval(load, 4000);
+        return () => { alive = false; clearInterval(t); };
     }, [chat?.contatoId, selfId]);
 
     const sendMessage = async () => {

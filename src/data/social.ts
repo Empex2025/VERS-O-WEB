@@ -17,4 +17,10 @@ export interface Post {
     likes: string;
     comments: string;
     shares: string;
+    /** Contadores numéricos crus (para incrementar na UI). */
+    likesCount?: number;
+    commentsCount?: number;
+    sharesCount?: number;
+    /** Id do autor (para enriquecer/roteirizar). */
+    authorId?: number;
 }

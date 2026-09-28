@@ -1,9 +1,10 @@
-import { useState } from 'react';
-import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ImageIcon } from 'lucide-react';
+import { useEffect, useRef, useState } from 'react';
+import { Heart, MessageCircle, Send, Bookmark, MoreHorizontal, ImageIcon, Loader2 } from 'lucide-react';
 import { Avatar } from '../ui/Avatar';
 import { ShareModal } from './ShareModal';
 import { type Post } from '../../data/social';
 import { socialService } from '../../services/socialService';
+import { profileService } from '../../services/profileService';
 import { useAuthStore } from '../../store/useAuthStore';
 
 interface Comment {
@@ -11,19 +12,59 @@ interface Comment {
     text: string;
 }
 
+interface RawComment {
+    id?: number;
+    id_postagem?: number;
+    autor_id?: number;
+    conteudo?: string;
+}
+
 export function PostCard({ post }: { post: Post }) {
     const [sharing, setSharing] = useState(false);
     const [liked, setLiked] = useState(false);
+    const [likeCount, setLikeCount] = useState(post.likesCount ?? 0);
+    const [pop, setPop] = useState(false);
     const [showComments, setShowComments] = useState(false);
     const [comments, setComments] = useState<Comment[]>([]);
+    const [commentCount, setCommentCount] = useState(post.commentsCount ?? 0);
+    const [loadingComments, setLoadingComments] = useState(false);
+    const loadedRef = useRef(false);
     const [draft, setDraft] = useState('');
     const userId = useAuthStore((s) => s.user?.id);
     const meName = useAuthStore((s) => s.user?.nome) || 'Você';
     const postId = Number(post.id);
 
+    // Carrega os comentários reais na 1ª vez que a seção é aberta.
+    useEffect(() => {
+        if (!showComments || loadedRef.current || !Number.isFinite(postId)) return;
+        loadedRef.current = true;
+        setLoadingComments(true);
+        (async () => {
+            try {
+                const raw = await socialService.comentarios.list<RawComment[] | { results: RawComment[] }>({ id_postagem: postId });
+                const all = Array.isArray(raw) ? raw : raw?.results ?? [];
+                const list = all.filter((c) => c.id_postagem == null || Number(c.id_postagem) === postId);
+                const ids = [...new Set(list.map((c) => c.autor_id).filter(Boolean))] as number[];
+                const byId = new Map<number, string>();
+                await Promise.all(ids.map(async (id) => {
+                    try { const u = await profileService.getPublicUser<{ nome?: string }>(id); if (u?.nome) byId.set(id, u.nome); } catch { /* fallback */ }
+                }));
+                const mapped = list.map((c) => ({ author: byId.get(c.autor_id ?? -1) || `Usuário ${c.autor_id ?? ''}`.trim(), text: c.conteudo || '' }));
+                setComments(mapped);
+                if (mapped.length) setCommentCount(mapped.length);
+            } catch { /* mantém vazio */ } finally {
+                setLoadingComments(false);
+            }
+        })();
+    }, [showComments, postId]);
+
     const toggleLike = () => {
-        setLiked((v) => !v);
-        // Persiste na API (otimista — ignora falha no modo demo)
+        setLiked((v) => {
+            const next = !v;
+            setLikeCount((c) => Math.max(0, c + (next ? 1 : -1)));
+            if (next) { setPop(true); setTimeout(() => setPop(false), 300); }
+            return next;
+        });
         if (Number.isFinite(postId) && userId) {
             socialService.likePost(postId, userId).catch(() => {});
         }
@@ -33,6 +74,7 @@ export function PostCard({ post }: { post: Post }) {
         const text = draft.trim();
         if (!text) return;
         setComments((prev) => [...prev, { author: meName, text }]);
+        setCommentCount((c) => c + 1);
         setDraft('');
         if (Number.isFinite(postId) && userId) {
             socialService.comment(postId, userId, text).catch(() => {});
@@ -76,15 +118,15 @@ export function PostCard({ post }: { post: Post }) {
                         onClick={toggleLike}
                         className={`flex items-center gap-1.5 transition-colors ${liked ? 'text-rose-500' : 'hover:text-rose-500'}`}
                     >
-                        <Heart size={20} className={liked ? 'fill-rose-500' : ''} />
-                        <span className="text-xs font-semibold">{post.likes}</span>
+                        <Heart size={20} className={`transition-transform duration-300 ${liked ? 'fill-rose-500' : ''} ${pop ? 'scale-150' : 'scale-100'}`} />
+                        <span className="text-xs font-semibold tabular-nums">{likeCount}</span>
                     </button>
                     <button
                         onClick={() => setShowComments((v) => !v)}
                         className={`flex items-center gap-1.5 transition-colors ${showComments ? 'text-[#407BFF]' : 'hover:text-[#407BFF]'}`}
                     >
                         <MessageCircle size={20} className={showComments ? 'fill-[#407BFF]' : ''} />
-                        {comments.length > 0 && <span className="text-xs font-semibold">{comments.length}</span>}
+                        <span className="text-xs font-semibold tabular-nums">{commentCount}</span>
                     </button>
                     <button onClick={() => setSharing(true)} className="flex items-center gap-1.5 hover:text-[#407BFF] transition-colors">
                         <Send size={20} />
@@ -93,12 +135,18 @@ export function PostCard({ post }: { post: Post }) {
             </div>
 
             <p className="text-xs text-gray-400 mt-2">
-                {post.comments} · {post.shares}
+                {commentCount} Comentários · {post.shares}
             </p>
 
             {/* Seção de comentários */}
             {showComments && (
                 <div className="mt-3 pt-3 border-t border-gray-100">
+                    {loadingComments && (
+                        <div className="flex items-center gap-2 text-xs text-gray-400 mb-3"><Loader2 size={14} className="animate-spin" /> Carregando comentários…</div>
+                    )}
+                    {!loadingComments && comments.length === 0 && (
+                        <p className="text-xs text-gray-400 mb-3">Nenhum comentário ainda. Seja o primeiro!</p>
+                    )}
                     {/* Comentários já publicados */}
                     {comments.map((c, i) => (
                         <div key={i} className="flex items-start gap-2 mb-3">

@@ -3,6 +3,7 @@ import { Search, Plus, ChevronDown, X, FileText, BadgeCheck } from 'lucide-react
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
+import { PacienteInfoGrid } from '../../components/health/PacienteInfoGrid';
 import { type Exam } from '../../data/health';
 import { teleconsultaService } from '../../services/teleconsultaService';
 import { useApiData } from '../../hooks/useApiData';
@@ -71,12 +72,9 @@ export function ResultadosExames() {
                             onClick={() => navigate('/minha-saude/documento')}
                             className="bg-white border border-gray-100 shadow-sm rounded-2xl p-4 text-left hover:border-[#407BFF] transition-colors"
                         >
-                            {/* Dados do paciente */}
-                            <div className="grid grid-cols-4 gap-2 pb-3 border-b border-gray-100">
-                                <Field label="Paciente" value="Nome do Paciente" />
-                                <Field label="CPF" value="000.000.000-00" />
-                                <Field label="Nascimento" value="00/00/0000" />
-                                <Field label="Sexo" value="Masculino" />
+                            {/* Dados do paciente (perfil real) */}
+                            <div className="pb-3 border-b border-gray-100">
+                                <PacienteInfoGrid />
                             </div>
                             {/* Status */}
                             <div className="pt-3">
@@ -99,15 +97,6 @@ export function ResultadosExames() {
 
             {showUpload && <AnexarModal onClose={() => setShowUpload(false)} />}
         </AppShell>
-    );
-}
-
-function Field({ label, value }: { label: string; value: string }) {
-    return (
-        <div>
-            <p className="text-[10px] text-gray-400">{label}</p>
-            <p className="text-xs font-bold text-gray-800 truncate">{value}</p>
-        </div>
     );
 }
 

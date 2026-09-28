@@ -7,6 +7,15 @@ export interface AuthUser {
     email: string;
     tipo_usuario: 'paciente' | 'profissional' | 'clinica' | string;
     ft_perfil?: string;
+    // Campos do cadastro/perfil (hidratados via GET /users/:id após o login)
+    username?: string;
+    descricao_bio?: string;
+    telefone?: string;
+    cpfcnpj?: string;
+    cpf?: string;
+    dt_nascimento?: string;
+    sexo?: string;
+    [key: string]: unknown;
 }
 
 interface AuthState {

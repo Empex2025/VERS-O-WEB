@@ -49,15 +49,22 @@ export function toPost(raw: RawPost, user?: RawUser): Post {
         const midias = raw.midias ? JSON.parse(raw.midias) : [];
         hasImage = Array.isArray(midias) && midias.length > 0;
     } catch { /* ignore */ }
+    const likesCount = raw.curtidas_count ?? raw.curtidas ?? 0;
+    const commentsCount = raw.comentarios_count ?? raw.comentarios_qtd ?? 0;
+    const sharesCount = raw.compartilhamentos ?? 0;
     return {
         id: String(raw.id),
         author: mapUserName(user, raw.autor_id),
+        authorId: raw.autor_id,
         time: timeAgo(raw.dt_postagem),
         text: raw.conteudo,
         hasImage,
-        likes: compactNumber(raw.curtidas_count ?? raw.curtidas ?? 0),
-        comments: `${compactNumber(raw.comentarios_count ?? raw.comentarios_qtd ?? 0)} Comentários`,
-        shares: `${compactNumber(raw.compartilhamentos ?? 0)} Compartilhamentos`,
+        likes: compactNumber(likesCount),
+        comments: `${compactNumber(commentsCount)} Comentários`,
+        shares: `${compactNumber(sharesCount)} Compartilhamentos`,
+        likesCount,
+        commentsCount,
+        sharesCount,
     };
 }
 
