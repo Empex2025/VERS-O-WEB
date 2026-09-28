@@ -45,10 +45,10 @@ export function MeuPerfil() {
 
     const me = {
         name: user?.nome ?? 'Usuário',
-        handle: user?.username ? `@${user.username}` : user?.email ? `@${user.email.split('@')[0]}` : '@carlos.magno',
+        handle: user?.username ? `@${user.username}` : user?.email ? `@${user.email.split('@')[0]}` : '@usuario',
         role: roleLabel(user?.tipo_usuario),
         bio: user?.descricao_bio || '',
-        stats: { posts: compactNumber(mine.posts.length || 3), followers: compactNumber(mine.followers || 4785), following: compactNumber(mine.following || 483) },
+        stats: { posts: compactNumber(mine.posts.length), followers: compactNumber(mine.followers), following: compactNumber(mine.following) },
     };
     const posts = mine.posts.map((p) => toPost(p, { nome: me.name }));
 
@@ -69,7 +69,7 @@ export function MeuPerfil() {
                 {/* Perfil */}
                 <div className="flex items-start gap-5">
                     <div className="p-1 rounded-2xl ring-2 ring-[#407BFF] shrink-0">
-                        <Avatar name={me.name} size={92} className="!rounded-2xl" />
+                        <Avatar name={me.name} size={92} src={user?.ft_perfil} className="!rounded-2xl" />
                     </div>
                     <div className="flex-1 min-w-0">
                         <div className="flex items-start justify-between gap-2">
@@ -128,7 +128,7 @@ export function MeuPerfil() {
 
                 {/* Card do usuário */}
                 <div className="flex items-center gap-3 pt-4 border-t border-gray-100">
-                    <Avatar name={me.name} size={40} />
+                    <Avatar name={me.name} size={40} src={user?.ft_perfil} />
                     <div className="flex-1">
                         <p className="text-sm font-bold text-gray-900">{me.name}</p>
                         <p className="text-xs text-gray-400">{me.role}</p>

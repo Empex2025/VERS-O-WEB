@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { User, AtSign, Link2, ChevronRight, X, Plus, Trash2, Stethoscope, Pencil, Type } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
@@ -6,6 +6,7 @@ import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 import { useAuthStore } from '../../store/useAuthStore';
 import { profileService } from '../../services/profileService';
+import { socialService } from '../../services/socialService';
 
 export function EditarPerfil() {
     const navigate = useNavigate();
@@ -15,14 +16,40 @@ export function EditarPerfil() {
     const [nome, setNome] = useState<string>(user?.nome ?? '');
     const [username, setUsername] = useState<string>(user?.username ?? user?.email?.split('@')[0] ?? '');
     const [bio, setBio] = useState<string>(user?.descricao_bio ?? '');
+    const [photo, setPhoto] = useState<string>(user?.ft_perfil ?? '');
+    const [uploadingPhoto, setUploadingPhoto] = useState(false);
     const [saving, setSaving] = useState(false);
+    const fileRef = useRef<HTMLInputElement>(null);
+
+    // Upload real da foto → salva ft_perfil no perfil e atualiza o store.
+    const onPickPhoto = async (e: React.ChangeEvent<HTMLInputElement>) => {
+        const file = e.target.files?.[0];
+        e.target.value = '';
+        if (!file || !user?.id) return;
+        setUploadingPhoto(true);
+        try {
+            const url = await socialService.uploadMedia(file);
+            setPhoto(url);
+            const res = await profileService.updateUser<any>(user.id, { ft_perfil: url });
+            mergeUser(res, { ft_perfil: url });
+        } catch { /* falha no upload: mantém a foto atual */ } finally {
+            setUploadingPhoto(false);
+        }
+    };
+
+    // Mescla a resposta do PUT (usuário completo, com cpfcnpj/telefone/genero) no store.
+    const mergeUser = (res: any, fallback: Record<string, unknown>) => {
+        const full = res?.user ?? res?.result ?? res;
+        const patch = full && typeof full === 'object' && !Array.isArray(full) ? full : fallback;
+        if (token) setAuth(token, { ...user, ...patch });
+    };
 
     const salvar = async () => {
         if (!user?.id) return;
         setSaving(true);
         try {
-            await profileService.updateUser(user.id, { nome: nome.trim(), username: username.trim(), descricao_bio: bio });
-            if (token) setAuth(token, { ...user, nome: nome.trim(), username: username.trim(), descricao_bio: bio });
+            const res = await profileService.updateUser<any>(user.id, { nome: nome.trim(), username: username.trim(), descricao_bio: bio });
+            mergeUser(res, { nome: nome.trim(), username: username.trim(), descricao_bio: bio });
         } catch { /* mantém local */ } finally {
             setSaving(false);
             navigate('/meu-perfil');
@@ -53,11 +80,16 @@ export function EditarPerfil() {
                     {/* Foto de Perfil */}
                     <div className="flex items-center justify-between bg-white border border-gray-100 rounded-xl px-4 py-3">
                         <div className="flex items-center gap-3">
-                            <Avatar name={nome || 'Perfil'} size={44} className="!rounded-xl" />
+                            <Avatar name={nome || 'Perfil'} size={44} src={photo} className="!rounded-xl" />
                             <span className="text-sm font-bold text-gray-900">Foto de Perfil</span>
                         </div>
-                        <button className="flex items-center gap-1.5 bg-[#407BFF] hover:bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full transition-colors">
-                            <Pencil size={13} /> Editar
+                        <input ref={fileRef} type="file" accept="image/*" className="hidden" onChange={onPickPhoto} />
+                        <button
+                            onClick={() => fileRef.current?.click()}
+                            disabled={uploadingPhoto}
+                            className="flex items-center gap-1.5 bg-[#407BFF] hover:bg-blue-600 text-white text-xs font-bold px-4 py-1.5 rounded-full transition-colors disabled:opacity-60"
+                        >
+                            <Pencil size={13} /> {uploadingPhoto ? 'Enviando...' : 'Editar'}
                         </button>
                     </div>
 

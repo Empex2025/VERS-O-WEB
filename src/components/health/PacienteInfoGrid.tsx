@@ -26,7 +26,7 @@ export function PacienteInfoGrid() {
         { label: 'Paciente', value: user?.nome || '—' },
         { label: 'CPF', value: fmtCpf(user?.cpf || user?.cpfcnpj) },
         { label: 'Nascimento', value: fmtDate(user?.dt_nascimento) },
-        { label: 'Sexo', value: fmtSexo(user?.sexo) },
+        { label: 'Sexo', value: fmtSexo(user?.sexo || user?.genero) },
     ];
     return (
         <div className="grid grid-cols-4 gap-2">

@@ -1,6 +1,6 @@
 import { cn } from '../../lib/utils';
 
-// Paleta determinística para os avatares (sem imagens reais ainda)
+// Paleta determinística para o fallback de iniciais (quando não há foto).
 const COLORS = [
     'bg-blue-500', 'bg-emerald-500', 'bg-violet-500', 'bg-rose-500',
     'bg-amber-500', 'bg-teal-500', 'bg-indigo-500', 'bg-pink-500',
@@ -23,21 +23,27 @@ interface AvatarProps {
     size?: number;
     className?: string;
     ring?: boolean;
+    /** URL da foto de perfil; se vazio, cai no fallback de iniciais. */
+    src?: string | null;
 }
 
-export function Avatar({ name, size = 40, className, ring }: AvatarProps) {
+export function Avatar({ name, size = 40, className, ring, src }: AvatarProps) {
     return (
         <div
             className={cn(
-                'inline-flex items-center justify-center rounded-full text-white font-bold shrink-0 select-none',
-                colorFor(name),
+                'inline-flex items-center justify-center rounded-full overflow-hidden text-white font-bold shrink-0 select-none',
+                !src && colorFor(name),
                 ring && 'ring-2 ring-[#407BFF] ring-offset-2',
                 className,
             )}
             style={{ width: size, height: size, fontSize: size * 0.38 }}
             aria-hidden="true"
         >
-            {initials(name)}
+            {src ? (
+                <img src={src} alt="" className="w-full h-full object-cover" draggable={false} />
+            ) : (
+                initials(name)
+            )}
         </div>
     );
 }
