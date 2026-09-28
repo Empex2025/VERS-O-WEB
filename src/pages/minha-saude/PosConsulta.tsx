@@ -1,14 +1,28 @@
 import { useState } from 'react';
 import { Star, FileText, Share2, HelpCircle, Flag, ChevronRight, X, PartyPopper } from 'lucide-react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
+import { teleconsultaService } from '../../services/teleconsultaService';
 import logoImage from '../../assets/login/logo-login.png';
 
 type Phase = 'done' | 'survey' | 'thanks';
 
 export function PosConsulta() {
     const navigate = useNavigate();
+    const location = useLocation();
+    const consultaId: number | undefined = location.state?.consultaId;
     const [phase, setPhase] = useState<Phase>('done');
     const [rating, setRating] = useState(0);
+    const [comentario, setComentario] = useState('');
+
+    // Envia a avaliação real (otimista): nota + comentário ligados à consulta.
+    const publicar = () => {
+        if (rating > 0 && consultaId) {
+            teleconsultaService.avaliacoes
+                .create({ consulta_id: consultaId, nota: rating, comentario: comentario || undefined })
+                .catch(() => { /* otimista: segue para o agradecimento */ });
+        }
+        setPhase('thanks');
+    };
 
     return (
         <div className="min-h-screen flex flex-col bg-white font-sans">
@@ -76,10 +90,12 @@ export function PosConsulta() {
                         <p className="text-xs font-semibold text-gray-700 mb-1">Comentários</p>
                         <textarea
                             rows={3}
+                            value={comentario}
+                            onChange={(e) => setComentario(e.target.value)}
                             placeholder="Conte o que achou do atendimento..."
                             className="w-full bg-[#F3F4F6] rounded-lg p-3 text-sm outline-none resize-none mb-4"
                         />
-                        <button onClick={() => setPhase('thanks')} className="w-full bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors">
+                        <button onClick={publicar} className="w-full bg-[#407BFF] hover:bg-blue-600 text-white font-bold text-sm py-3 rounded-full transition-colors">
                             Publicar Avaliação
                         </button>
                     </div>

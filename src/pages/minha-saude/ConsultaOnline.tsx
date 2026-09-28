@@ -39,7 +39,7 @@ export function ConsultaOnline() {
         return () => { alive = false; };
     }, [agendamentoId]);
 
-    const encerrar = () => navigate('/minha-saude/pos-consulta');
+    const encerrar = () => navigate('/minha-saude/pos-consulta', { state: agendamentoId ? { consultaId: agendamentoId } : undefined });
 
     return (
         <div className="min-h-screen flex flex-col bg-white font-sans">
