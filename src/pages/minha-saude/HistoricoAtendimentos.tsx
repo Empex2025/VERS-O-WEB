@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Search, ChevronDown, BadgeCheck, X } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 import { teleconsultaService } from '../../services/teleconsultaService';
@@ -50,7 +51,7 @@ export function HistoricoAtendimentos() {
     const { data: GRUPOS_DATA } = useApiData(fetchHistorico, [], []);
 
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-3xl mx-auto">
                 <PageHeader title="Histórico de Atendimento" to="/minha-saude" />
 

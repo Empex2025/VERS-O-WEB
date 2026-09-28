@@ -1,12 +1,13 @@
 import { BadgeCheck } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { HealthFields } from '../../components/health/HealthFields';
 import { Avatar } from '../../components/ui/Avatar';
 
 export function InformacoesSaude() {
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-2xl mx-auto">
                 <PageHeader title="Minhas Informações de Saúde" to="/minha-saude" />
 

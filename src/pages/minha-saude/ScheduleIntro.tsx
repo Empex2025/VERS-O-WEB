@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Menu, CalendarDays, Heart, ArrowRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { SchedulePicker } from '../../components/health/SchedulePicker';
 
@@ -19,7 +20,7 @@ export function ScheduleIntro({ header, title, subtitle, button, showDontRepeat,
     const [picking, setPicking] = useState(false);
 
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-2xl mx-auto">
                 <PageHeader title={header} to="/minha-saude/agendamentos" right={<Menu size={20} className="text-gray-500" />} />
 

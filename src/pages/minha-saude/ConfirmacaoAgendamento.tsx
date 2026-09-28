@@ -1,6 +1,7 @@
 import { BadgeCheck, Copy, Check } from 'lucide-react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 
@@ -11,7 +12,7 @@ export function ConfirmacaoAgendamento() {
     const profNome: string = location.state?.profNome ?? 'Profissional';
 
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-md mx-auto">
                 <PageHeader title="Agendamento concluído" to="/minha-saude/agendamentos" />
 

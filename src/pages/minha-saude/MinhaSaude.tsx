@@ -8,9 +8,8 @@ import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
-import { teleconsultaService } from '../../services/teleconsultaService';
-import { profileService } from '../../services/profileService';
-import { useApiData } from '../../hooks/useApiData';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
+import { useProfissionais, money, type Prof } from '../../hooks/useProfissionais';
 
 /* ─── Tiles de acesso rápido às sub-seções de saúde ─── */
 const TILES = [
@@ -27,66 +26,11 @@ const CATEGORIES = [
     { key: 'cuidadores', label: 'Cuidadores', icon: HeartHandshake },
 ] as const;
 
-interface Prof {
-    id: number;
-    nome: string;
-    especialidade: string;
-    preco: number;
-    modalidades: string[];
-    clinica_nome?: string;
-    cidade?: string;
-    estado?: string;
-}
-
-interface RawProf {
-    id: number;
-    nome?: string;
-    especialidade?: string;
-    preco?: number;
-    modalidades?: string[];
-    clinica_nome?: string;
-    cidade?: string;
-    estado?: string;
-}
-
-/** Catálogo real de profissionais (`GET /api/teleconsulta/profissionais`), com nome enriquecido. */
-async function fetchProfissionais(): Promise<Prof[]> {
-    const raw = await teleconsultaService.profissionais.list<{ results?: RawProf[] } | RawProf[]>();
-    const list = Array.isArray(raw) ? raw : raw?.results ?? [];
-    // Enriquece o nome pelo diretório público quando o catálogo devolve um placeholder.
-    const enriched = await Promise.all(
-        list.map(async (p): Promise<Prof> => {
-            let nome = p.nome || '';
-            if (!nome || /^Profissional\s*\d*$/i.test(nome)) {
-                try {
-                    const u = await profileService.getPublicUser<{ nome?: string }>(p.id);
-                    if (u?.nome) nome = u.nome;
-                } catch { /* mantém o que veio */ }
-            }
-            return {
-                id: p.id,
-                nome: nome || `Profissional ${p.id}`,
-                especialidade: p.especialidade || 'Clínica Geral',
-                preco: Number(p.preco ?? 0),
-                modalidades: p.modalidades || ['Teleconsulta', 'Presencial'],
-                clinica_nome: p.clinica_nome,
-                cidade: p.cidade,
-                estado: p.estado,
-            };
-        }),
-    );
-    return enriched;
-}
-
-function money(v: number) {
-    return `R$ ${v.toFixed(2).replace('.', ',')}`;
-}
-
 export function MinhaSaude() {
     const navigate = useNavigate();
     const [cat, setCat] = useState<(typeof CATEGORIES)[number]['key']>('consultas');
     const [term, setTerm] = useState('');
-    const { data: profs } = useApiData(fetchProfissionais, [], []);
+    const { data: profs } = useProfissionais();
 
     const filtered = useMemo(() => {
         const q = term.trim().toLowerCase();
@@ -279,16 +223,5 @@ function ProfCard({ prof, onOpen }: { prof: Prof; onOpen: () => void }) {
                 <p className="text-sm font-bold text-gray-900">{prof.preco ? money(prof.preco) : '—'}</p>
             </div>
         </button>
-    );
-}
-
-/* ─── Coluna direita "Patrocinado" (slots de anúncio) ─── */
-export function PatrocinadoRail() {
-    return (
-        <div className="flex flex-col gap-4">
-            <p className="text-sm font-bold text-gray-900">Patrocinado</p>
-            <div className="h-40 rounded-2xl border border-gray-200 bg-white" />
-            <div className="h-40 rounded-2xl border border-gray-200 bg-white" />
-        </div>
     );
 }

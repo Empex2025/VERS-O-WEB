@@ -5,6 +5,7 @@ import {
 } from 'lucide-react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 import { profileService } from '../../services/profileService';
@@ -58,7 +59,7 @@ export function Pagamento() {
     };
 
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-md mx-auto">
                 <PageHeader
                     title={step === 'method' ? 'Pagamento' : step === 'card' ? 'Pagamento com Cartão' : step === 'pix' ? 'Pagamento com Pix' : 'Pagamento'}

@@ -1,5 +1,6 @@
 import { Share2, Download } from 'lucide-react';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { useAuthStore } from '../../store/useAuthStore';
 import logoImage from '../../assets/login/logo-login.png';
@@ -15,7 +16,7 @@ const meds = [
 export function DocumentoMedico() {
     const user = useAuthStore((s) => s.user) as any;
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-2xl mx-auto">
                 <PageHeader
                     title="Resultados de Exames"

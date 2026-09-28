@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { BadgeCheck, Video, Copy, Menu, X, LifeBuoy, CalendarClock, Ban, CalendarDays, ChevronRight } from 'lucide-react';
 import { useNavigate, useParams } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 import { teleconsultaService } from '../../services/teleconsultaService';
@@ -41,7 +42,7 @@ export function AgendamentoDetalhe() {
     const isTele = appt.channel === 'Teleconsulta';
 
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-2xl mx-auto">
                 <PageHeader
                     title="Atendimento Agendado"

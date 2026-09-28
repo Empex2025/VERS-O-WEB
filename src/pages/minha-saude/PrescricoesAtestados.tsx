@@ -1,5 +1,6 @@
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { teleconsultaService } from '../../services/teleconsultaService';
 import { useApiData } from '../../hooks/useApiData';
@@ -34,7 +35,7 @@ export function PrescricoesAtestados() {
     const navigate = useNavigate();
     const { data: docs } = useApiData(fetchDocs, [], []);
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-2xl mx-auto">
                 <PageHeader title="Documentos Disponíveis" to="/minha-saude" />
 

@@ -1,6 +1,7 @@
 import { BadgeCheck, Video, MapPin } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 import { type Appointment } from '../../data/health';
@@ -53,7 +54,7 @@ export function MeusAgendamentos() {
     const navigate = useNavigate();
     const { data: appointmentsData } = useApiData(fetchAgendamentos, [], []);
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-2xl mx-auto">
                 <PageHeader title="Meus Agendamentos" to="/minha-saude" />
 

@@ -2,6 +2,7 @@ import { useState } from 'react';
 import { Menu, BadgeCheck, Stethoscope, CalendarDays, Clock, X, Star, Headset, RotateCcw, ChevronRight } from 'lucide-react';
 import { useNavigate } from 'react-router-dom';
 import { AppShell } from '../../components/layout/AppShell';
+import { PatrocinadoRail } from '../../components/health/PatrocinadoRail';
 import { PageHeader } from '../../components/layout/PageHeader';
 import { Avatar } from '../../components/ui/Avatar';
 
@@ -10,7 +11,7 @@ export function HistoricoDetalhe() {
     const [menu, setMenu] = useState(false);
 
     return (
-        <AppShell>
+        <AppShell rightRail={<PatrocinadoRail />}>
             <div className="max-w-2xl mx-auto">
                 <PageHeader
                     title="Atendimento Concluído"
